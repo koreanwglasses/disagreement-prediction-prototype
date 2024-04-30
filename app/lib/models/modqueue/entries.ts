@@ -4,7 +4,7 @@ import {
   uniqueNamesGenerator,
   adjectives,
   animals,
-  colors
+  colors,
 } from "unique-names-generator";
 import { WithId } from "mongodb";
 
