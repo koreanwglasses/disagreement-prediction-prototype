@@ -19,6 +19,21 @@ export interface Entry {
     [rule: string]: number;
   };
   is_op?: boolean;
+  panel_predictions?: { approve: number; reject: number; unsure: number };
+  state?: {
+    [context_id: string]: {
+      case_status: "unhandled" | "approved" | "removed";
+      panel_status: "inactive" | "active";
+      panel_votes: {
+        user_id: string;
+        vote: "approve" | "remove";
+      }[];
+      panel_notes: {
+        user_id: string;
+        text: string;
+      }[];
+    };
+  };
 }
 
 export const getCollection = async () => {
@@ -29,7 +44,14 @@ export const getCollection = async () => {
 export const getEntries = async () => {
   const collection = await getCollection();
   const items = await collection.find({}).limit(20).toArray();
-  return generateAuthorNames(items);
+  return fillMockData(items);
+};
+
+const fillMockData = (entries: WithId<Entry>[]) => {
+  return entries.map((entry) => ({
+    ...entry,
+    author_name: generateAuthorName(entry),
+  }));
 };
 
 const generateAuthorName = (entry: Entry) => {
@@ -37,9 +59,4 @@ const generateAuthorName = (entry: Entry) => {
   return uniqueNamesGenerator({ dictionaries: [adjectives, colors], seed });
 };
 
-const generateAuthorNames = (entries: WithId<Entry>[]) => {
-  return entries.map((entry) => ({
-    ...entry,
-    author_name: generateAuthorName(entry),
-  }));
-};
+// generatePanelPrediction
