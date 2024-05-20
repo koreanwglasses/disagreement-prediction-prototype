@@ -1,1 +1,1 @@
-mongorestore -d=main -c=modqueue.entries /data-init/queue_data.bson
+mongorestore -d=main -c=modqueueEntries /data-init/queue_data.bson

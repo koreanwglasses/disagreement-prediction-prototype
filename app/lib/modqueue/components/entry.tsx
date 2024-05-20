@@ -1,8 +1,20 @@
-import { Entry } from "@/lib/models/modqueue/entries";
+"use client";
+
+import type { Entry, EntryState } from "../model";
+import * as Actions from "../actions";
 import { Avatar, Box } from "@mui/material";
 import Icon from "@mdi/react";
-import { mdiFlag } from "@mdi/js";
+import {
+  mdiFlag,
+  mdiCheck,
+  mdiClose,
+  mdiAccountGroupOutline,
+  mdiAccount,
+  mdiAccountOutline,
+} from "@mdi/js";
 import _ from "lodash";
+import { ActionButton } from "@/lib/components/action-button";
+import { useState } from "react";
 
 export const EntryRenderer = ({ entry }: { entry: Entry }) => {
   return (
@@ -18,18 +30,17 @@ export const EntryRenderer = ({ entry }: { entry: Entry }) => {
       }}
     >
       <Box width="48px" flexShrink={0} />
-      <Box display="flex" flexDirection="column" gap={1}>
+      <Box display="flex" flexDirection="column" gap={1} flexGrow={1}>
         <HeaderRenderer entry={entry} />
         <BodyRenderer entry={entry} />
         <ReportsRenderer entry={entry} />
+        <ActionsRenderer entry={entry} />
       </Box>
     </Box>
   );
 };
 
-const HeaderRenderer: React.FC<{
-  entry: Entry;
-}> = ({ entry }) => {
+const HeaderRenderer = ({ entry }: { entry: Entry }) => {
   const subreddit = "r/changemyview";
   const timestamp = "0 minutes ago";
 
@@ -104,5 +115,64 @@ const ReportsRenderer = ({ entry }: { entry: Entry }) => {
         </Box>
       </Box>
     )
+  );
+};
+
+const ActionsRenderer = ({ entry }: { entry: Entry }) => {
+  const [entryState, setEntryState] = useState<EntryState | null | undefined>(
+    entry.state
+  );
+  const togglePanelStatus = async () => {
+    setEntryState(
+      await Actions.updatePanelStatus(entry.id, !entryState?.panel?.is_active)
+    );
+  };
+
+  const submitDecision = async (decision: "approve" | "remove") => {
+    setEntryState(await Actions.submitDecision(entry.id, decision));
+  };
+
+  return (
+    <Box display="flex" gap={1.5}>
+      <ActionButton
+        icon={<Icon path={mdiCheck} size={0.7} />}
+        label="Approve"
+        variant="filled"
+        onClick={() => submitDecision("approve")}
+      />
+      <ActionButton
+        icon={<Icon path={mdiClose} size={0.7} />}
+        label="Remove"
+        variant="outlined"
+        onClick={() => submitDecision("remove")}
+      />
+      <ActionButton
+        icon={<Icon path={mdiAccountGroupOutline} size={0.7} />}
+        label={entryState?.panel?.is_active ? "Cancel Panel" : "Panel"}
+        variant="outlined"
+        onClick={togglePanelStatus}
+      />
+      {entryState?.panel?.is_active && (
+        <Box display="flex" alignItems="center">
+          {[0, 1, 2].map((i) => {
+            const decision = entryState?.panel?.votes?.[i]?.decision;
+            return (
+              <Icon
+                path={decision ? mdiAccount : mdiAccountOutline}
+                size={1.2}
+                key={i}
+                color={
+                  decision === "approve"
+                    ? "#f00"
+                    : decision === "remove"
+                    ? "#00f"
+                    : "#888"
+                }
+              />
+            );
+          })}
+        </Box>
+      )}
+    </Box>
   );
 };

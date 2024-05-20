@@ -1,8 +1,9 @@
-import { EntryRenderer } from "@/lib/components/modqueue/entry";
-import { getEntries } from "@/lib/models/modqueue/entries";
+import { EntryRenderer } from "@/lib/modqueue/components/entry";
+import { fetchEntries } from "@/lib/modqueue/actions";
+import { Box } from "@mui/material";
 
 const Modqueue = async () => {
-  const entries = await getEntries();
+  const entries = await fetchEntries();
 
   return (
     <>
