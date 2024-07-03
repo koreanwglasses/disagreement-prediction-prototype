@@ -42,7 +42,6 @@ export const EntryRenderer = ({ entry }: { entry: Entry }) => {
 
 const HeaderRenderer = ({ entry }: { entry: Entry }) => {
   const subreddit = "r/changemyview";
-  const timestamp = "0 minutes ago";
 
   return (
     <Box
@@ -61,8 +60,6 @@ const HeaderRenderer = ({ entry }: { entry: Entry }) => {
           {entry.flair}
         </Box>
       )}
-      <span>·</span>
-      <span>{timestamp}</span>
     </Box>
   );
 };
