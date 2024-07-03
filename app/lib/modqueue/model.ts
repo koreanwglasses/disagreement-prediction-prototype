@@ -21,7 +21,7 @@ interface EntryModel {
     [rule: string]: number;
   };
   is_op?: boolean;
-  panel_predictions?: { approve: number; reject: number; unsure: number };
+  panel_predictions?: { approve: number; remove: number; unsure: number };
 }
 
 interface EntryStateModel {
@@ -215,7 +215,7 @@ const generateAuthorName = (entry: Entry) => {
 const generatePanelPrediction = (entry: Entry) => {
   return {
     approve: 0.6,
-    reject: 0.3,
+    remove: 0.3,
     unsure: 0.1,
   };
 };

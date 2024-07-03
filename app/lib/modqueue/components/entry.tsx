@@ -11,6 +11,7 @@ import {
   mdiAccountGroupOutline,
   mdiAccount,
   mdiAccountOutline,
+  mdiAccountGroup,
 } from "@mdi/js";
 import _ from "lodash";
 import { ActionButton } from "@/lib/components/action-button";
@@ -34,6 +35,7 @@ export const EntryRenderer = ({ entry }: { entry: Entry }) => {
         <HeaderRenderer entry={entry} />
         <BodyRenderer entry={entry} />
         <ReportsRenderer entry={entry} />
+        <PredictionsRenderer entry={entry} />
         <ActionsRenderer entry={entry} />
       </Box>
     </Box>
@@ -97,7 +99,13 @@ const ReportsRenderer = ({ entry }: { entry: Entry }) => {
           gap: 1,
         }}
       >
-        <Icon path={mdiFlag} size={1} color="#ffc33d" className="flagIcon" />
+        <Icon
+          path={mdiFlag}
+          size={1}
+          color="#ffc33d"
+          className="flagIcon"
+          style={{ flexShrink: 0 }}
+        />
         <Box>
           <Box component="h3" fontWeight="bold">
             {numReports} {numReports == 1 ? "Report" : "Reports"}
@@ -109,6 +117,43 @@ const ReportsRenderer = ({ entry }: { entry: Entry }) => {
               </Box>
             ))}
           </Box>
+        </Box>
+      </Box>
+    )
+  );
+};
+
+const PredictionsRenderer = ({ entry }: { entry: Entry }) => {
+  return (
+    entry.panel_predictions && (
+      <Box
+        sx={{
+          p: 1,
+          bgcolor: "#ffefcc",
+          display: "flex",
+          borderRadius: 1,
+          gap: 1,
+        }}
+      >
+        <Icon
+          path={mdiAccountGroup}
+          size={1}
+          color="#ffc33d"
+          className="flagIcon"
+          style={{ flexShrink: 0 }}
+        />
+        <Box>
+          <Box component="h3" fontWeight="bold">
+            Predicted Panel
+          </Box>
+          Our model thinks{" "}
+          <strong>{(entry.panel_predictions.approve * 100).toFixed(0)}%</strong>{" "}
+          of moderators on your mod team would support approval, and{" "}
+          <strong>{(entry.panel_predictions.remove * 100).toFixed(0)}%</strong>{" "}
+          of moderators would support removal. We are unsure how{" "}
+          <strong>{(entry.panel_predictions.unsure * 100).toFixed(0)}%</strong>{" "}
+          of moderators would act. Because consensus for this case is low, we
+          recommend panel review. How are these predictions generated?
         </Box>
       </Box>
     )
