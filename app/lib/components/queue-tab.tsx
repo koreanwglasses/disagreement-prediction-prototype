@@ -3,13 +3,28 @@ import { Box, ToggleButtonGroup, ToggleButtonGroupProps, ToggleButton, ButtonBas
 
 export const QueueTabs = ({
   modes,
+  activeMode,
+  setActiveMode,
   sx = [],
   ...props
 }: {
-  modes: React.ReactNode[];
+  modes: React.ReactNode[],
+  activeMode: React.ReactNode,
+  setActiveMode: (event: React.FormEvent<HTMLButtonElement>, newState: React.ReactNode) => void;
 } & ToggleButtonGroupProps) => {
+  const handleChange = (event, newState) =>  {
+    if (newState != null) {
+    setActiveMode(newState)
+  };
+};
   return (
-      <ToggleButtonGroup size="Large" sx={{gap: 10}} exclusive>
+      <ToggleButtonGroup 
+        size="Large" 
+	sx={{gap: 10}}
+       	exclusive
+       	value={activeMode}
+       	onChange = {handleChange}
+      >
         { modes.map( (mode) => {
 	  return (
 	    <QueueTab mode={mode}/>
@@ -54,3 +69,4 @@ const QueueTab = ({
      </ToggleButton>
   );
 };
+

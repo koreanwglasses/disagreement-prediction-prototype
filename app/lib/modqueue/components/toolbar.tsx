@@ -17,14 +17,20 @@ import { QueueTabs } from "@/lib/components/queue-tab";
 //import { QueueDropdown } from "@/lib/components/queue-dropdown";
 import { useState } from "react";
 
-const modes = ["Needs Review", "Resolved"]	
-
-export const ToolbarRenderer = () => {
+export const ToolbarRenderer = ({
+  modes,
+  activeMode,
+  setActiveMode
+}: {
+  modes: React.ReactNode[],
+  activeMode: React.ReactNode,
+  setActiveMode: (event: React.FormEvent<HTMLButtonElement>) => void;
+}) => {
   return (
     <Box display="flex" flexDirection="column">
       <Box sx={{fontSize: 30, fontWeight: "semi-bold"}}>Mod Queue</Box>
       <Box display="flex" flexDirection="row">
-        <QueueTabs modes={modes}/>
+        <QueueTabs modes={modes} activeMode={activeMode} setActiveMode={setActiveMode}/>
       </Box>
     </Box>
   );
