@@ -18,7 +18,10 @@ export const QueueContainer = ({ entries }: { entries: Entry[] }) => {
       />
       <Box>
         {entries.map((entry, i) => (
-          <EntryRenderer entry={entry} key={i} />
+          (entry.decision == null && activeMode==modes[0]) ||
+		  (entry.decision != null && activeMode==modes[1]) ?  
+            (<EntryRenderer entry={entry} key={i} />)
+	  : null
         ))}
       </Box>
     </>
