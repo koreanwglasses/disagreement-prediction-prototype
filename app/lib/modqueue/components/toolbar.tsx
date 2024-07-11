@@ -20,27 +20,30 @@ import { useState } from "react";
 export const ToolbarRenderer = ({
   modes,
   activeMode,
-  setActiveMode
+  setActiveMode,
 }: {
-  modes: React.ReactNode[],
-  activeMode: React.ReactNode,
-  setActiveMode: (event: React.FormEvent<HTMLButtonElement>) => void;
+  modes: string[];
+  activeMode: string;
+  setActiveMode: (mode: string) => void;
 }) => {
   return (
     <Box display="flex" flexDirection="column">
-      <Box sx={{fontSize: 30, fontWeight: "semi-bold"}}>Mod Queue</Box>
+      <Box sx={{ fontSize: 30, fontWeight: "semi-bold" }}>Mod Queue</Box>
       <Box display="flex" flexDirection="row">
-        <QueueTabs modes={modes} activeMode={activeMode} setActiveMode={setActiveMode}/>
+        <QueueTabs
+          modes={modes}
+          activeMode={activeMode}
+          setActiveMode={setActiveMode}
+        />
       </Box>
     </Box>
   );
 };
-	//<QueueDropdown>Dropdown1</QueueDropdown>
-	//<QueueDropdown>Dropdown2</QueueDropdown>
-  //      <ActionButton 
+//<QueueDropdown>Dropdown1</QueueDropdown>
+//<QueueDropdown>Dropdown2</QueueDropdown>
+//      <ActionButton
 //	  icon={}
 //	  label="Tab2"
 //	  variant="clear"
 //	  onClick={() => {}}
 //	/>
-
