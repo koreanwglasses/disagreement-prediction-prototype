@@ -18,15 +18,15 @@ import { ActionButton } from "@/lib/components/action-button";
 import { useState } from "react";
 
 export const EntryRenderer = ({
-  entry, 
+  entry,
   listId,
   sorting,
-  setSorting
+  setSorting,
 }: {
-  entry: Entry,
-  listId: Number,
-  sorting: Number[]
-  setSorting: (sorting: Number[]) => void 
+  entry: Entry;
+  listId: Number;
+  sorting: Number[];
+  setSorting: (sorting: Number[]) => void;
 }) => {
   return (
     <Box
@@ -46,7 +46,12 @@ export const EntryRenderer = ({
         <BodyRenderer entry={entry} />
         <ReportsRenderer entry={entry} />
         <PredictionsRenderer entry={entry} />
-        <ActionsRenderer entry={entry} listId={listId} sorting={sorting} setSorting={setSorting}/>
+        <ActionsRenderer
+          entry={entry}
+          listId={listId}
+          sorting={sorting}
+          setSorting={setSorting}
+        />
       </Box>
     </Box>
   );
@@ -156,8 +161,11 @@ const PredictionsRenderer = ({ entry }: { entry: Entry }) => {
           <Box component="h3" fontWeight="bold">
             Predicted Panel
           </Box>
+          <PredictionScoresVisualization scores={entry.panel_predictions} />
           Our model thinks{" "}
-          <strong>{(entry.panel_predictions.approve * 100).toFixed(0)}%</strong>{" "}
+          <strong>
+            {(entry.panel_predictions.approve * 100).toFixed(0)}%
+          </strong>{" "}
           of moderators on your mod team would support approval, and{" "}
           <strong>{(entry.panel_predictions.remove * 100).toFixed(0)}%</strong>{" "}
           of moderators would support removal. We are unsure how{" "}
@@ -170,16 +178,33 @@ const PredictionsRenderer = ({ entry }: { entry: Entry }) => {
   );
 };
 
-const ActionsRenderer = ({ 
+const PredictionScoresVisualization = ({
+  scores,
+}: {
+  scores: { approve: number; remove: number; unsure: number };
+}) => {
+  return (
+    <Box display="flex" height="20px">
+      <Box
+        width={`${scores.approve * 100}%`}
+        height="100%"
+        bgcolor="#f00"
+      ></Box>
+      <Box width={`${scores.unsure * 100}%`} height="100%" bgcolor="#888"></Box>
+      <Box width={`${scores.remove * 100}%`} height="100%" bgcolor="#00f"></Box>
+    </Box>
+  );
+};
+const ActionsRenderer = ({
   entry,
   listId,
   sorting,
-  setSorting
+  setSorting,
 }: {
-  entry: Entry,
-  listId: Number,
-  sorting: Number[],
-  setSorting: (sorting: Number[]) => void,
+  entry: Entry;
+  listId: Number;
+  sorting: Number[];
+  setSorting: (sorting: Number[]) => void;
 }) => {
   const [entryState, setEntryState] = useState<EntryState | null | undefined>(
     entry.state
@@ -192,7 +217,7 @@ const ActionsRenderer = ({
 
   const submitDecision = async (decision: "approve" | "remove") => {
     setEntryState(await Actions.submitDecision(entry.id, decision));
-    setSorting(sorting.map((val, i) => (i == listId) ? 1 : val ));
+    setSorting(sorting.map((val, i) => (i == listId ? 1 : val)));
   };
 
   return (
