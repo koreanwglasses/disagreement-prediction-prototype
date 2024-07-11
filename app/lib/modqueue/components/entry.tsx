@@ -17,7 +17,17 @@ import _ from "lodash";
 import { ActionButton } from "@/lib/components/action-button";
 import { useState } from "react";
 
-export const EntryRenderer = ({ entry }: { entry: Entry }) => {
+export const EntryRenderer = ({
+  entry, 
+  listId,
+  sorting,
+  setSorting
+}: {
+  entry: Entry,
+  listId: Number,
+  sorting: Number[]
+  setSorting: (sorting: Number[]) => void 
+}) => {
   return (
     <Box
       sx={{
@@ -36,7 +46,7 @@ export const EntryRenderer = ({ entry }: { entry: Entry }) => {
         <BodyRenderer entry={entry} />
         <ReportsRenderer entry={entry} />
         <PredictionsRenderer entry={entry} />
-        <ActionsRenderer entry={entry} />
+        <ActionsRenderer entry={entry} listId={listId} sorting={sorting} setSorting={setSorting}/>
       </Box>
     </Box>
   );
@@ -160,7 +170,17 @@ const PredictionsRenderer = ({ entry }: { entry: Entry }) => {
   );
 };
 
-const ActionsRenderer = ({ entry }: { entry: Entry }) => {
+const ActionsRenderer = ({ 
+  entry,
+  listId,
+  sorting,
+  setSorting
+}: {
+  entry: Entry,
+  listId: Number,
+  sorting: Number[],
+  setSorting: (sorting: Number[]) => void,
+}) => {
   const [entryState, setEntryState] = useState<EntryState | null | undefined>(
     entry.state
   );
@@ -172,6 +192,7 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
 
   const submitDecision = async (decision: "approve" | "remove") => {
     setEntryState(await Actions.submitDecision(entry.id, decision));
+    setSorting(sorting.map((val, i) => (i == listId) ? 1 : val ));
   };
 
   return (
