@@ -18,15 +18,15 @@ import { ActionButton } from "@/lib/components/action-button";
 import { useState } from "react";
 
 export const EntryRenderer = ({
-  entry, 
+  entry,
   listId,
   sorting,
-  setSorting
+  setSorting,
 }: {
-  entry: Entry,
-  listId: Number,
-  sorting: Number[]
-  setSorting: (sorting: Number[]) => void 
+  entry: Entry;
+  listId: Number;
+  sorting: Number[];
+  setSorting: (sorting: Number[]) => void;
 }) => {
   return (
     <Box
@@ -46,7 +46,12 @@ export const EntryRenderer = ({
         <BodyRenderer entry={entry} />
         <ReportsRenderer entry={entry} />
         <PredictionsRenderer entry={entry} />
-        <ActionsRenderer entry={entry} listId={listId} sorting={sorting} setSorting={setSorting}/>
+        <ActionsRenderer
+          entry={entry}
+          listId={listId}
+          sorting={sorting}
+          setSorting={setSorting}
+        />
       </Box>
     </Box>
   );
@@ -156,8 +161,11 @@ const PredictionsRenderer = ({ entry }: { entry: Entry }) => {
           <Box component="h3" fontWeight="bold">
             Predicted Panel
           </Box>
+          <PredictionScoresVisualization scores={entry.panel_predictions} />
           Our model thinks{" "}
-          <strong>{(entry.panel_predictions.approve * 100).toFixed(0)}%</strong>{" "}
+          <strong>
+            {(entry.panel_predictions.approve * 100).toFixed(0)}%
+          </strong>{" "}
           of moderators on your mod team would support approval, and{" "}
           <strong>{(entry.panel_predictions.remove * 100).toFixed(0)}%</strong>{" "}
           of moderators would support removal. We are unsure how{" "}
@@ -170,16 +178,110 @@ const PredictionsRenderer = ({ entry }: { entry: Entry }) => {
   );
 };
 
-const ActionsRenderer = ({ 
+const PredictionScoresVisualization = ({
+  scores,
+}: {
+  scores: { approve: number; remove: number; unsure: number };
+}) => {
+  /** Shorthand for scores as percentages */
+  const s = [scores.approve * 100, scores.unsure * 100, scores.remove * 100];
+  const maxWidth = "600px";
+  const totalHeight = "40px";
+  const barHeight = "6px";
+  const barOffsetBottom = "6px";
+  const tickWidth = "1.5px";
+  const tickHeight = "18px";
+  const labelOffsetBottom = "16px";
+  const labelFontSize = "11px";
+  return (
+    <Box sx={{ transform: "translate(0,0)", height: totalHeight, maxWidth }}>
+      {/* Bars */}
+      <Box
+        position="absolute"
+        left="0"
+        bottom={barOffsetBottom}
+        width={`${s[0]}%`}
+        height={barHeight}
+        bgcolor="#00f"
+      />
+      <Box
+        position="absolute"
+        left={`${s[0]}%`}
+        bottom={barOffsetBottom}
+        width={`${s[1]}%`}
+        height={barHeight}
+        bgcolor="#888"
+      />
+      <Box
+        position="absolute"
+        left={`${s[0] + s[1]}%`}
+        bottom={barOffsetBottom}
+        width={`${s[2]}%`}
+        height={barHeight}
+        bgcolor="#f00"
+      />
+
+      {/* Ticks */}
+      <Box
+        position="absolute"
+        left={`${s[0]}%`}
+        bottom="0"
+        height={tickHeight}
+        borderRight={`solid ${tickWidth}`}
+      />
+      <Box
+        position="absolute"
+        left={`${s[0] + s[1]}%`}
+        bottom="0"
+        height={tickHeight}
+        borderRight={`solid ${tickWidth}`}
+      />
+
+      {/* Labels */}
+      <Box
+        position="absolute"
+        left="0"
+        bottom={labelOffsetBottom}
+        width={`${s[0]}%`}
+        fontSize={labelFontSize}
+        textAlign="center"
+      >
+        {s[0].toFixed(0)}% Approve
+      </Box>
+      <Box
+        position="absolute"
+        left={`${s[0]}%`}
+        bottom={labelOffsetBottom}
+        width={`${s[1]}%`}
+        fontSize={labelFontSize}
+        textAlign="center"
+      >
+        {s[1].toFixed(0)}% Unsure
+      </Box>
+      <Box
+        position="absolute"
+        left={`${s[0] + s[1]}%`}
+        bottom={labelOffsetBottom}
+        width={`${s[2]}%`}
+        fontSize={labelFontSize}
+        textAlign="center"
+      >
+        {s[2].toFixed(0)}% Remove
+      </Box>
+    </Box>
+  );
+};
+
+const ActionsRenderer = ({
   entry,
   listId,
   sorting,
-  setSorting
+  setSorting,
 }: {
-  entry: Entry,
-  listId: Number,
-  sorting: Number[],
-  setSorting: (sorting: Number[]) => void,
+  entry: Entry;
+  listId: Number;
+  sorting: Number[];
+  setSorting: (sorting: Number[]) => void;
 }) => {
   const [entryState, setEntryState] = useState<EntryState | null | undefined>(
     entry.state
@@ -192,7 +294,7 @@ const ActionsRenderer = ({
 
   const submitDecision = async (decision: "approve" | "remove") => {
     setEntryState(await Actions.submitDecision(entry.id, decision));
-    setSorting(sorting.map((val, i) => (i == listId) ? 1 : val ));
+    setSorting(sorting.map((val, i) => (i == listId ? 1 : val)));
   };
 
   return (
