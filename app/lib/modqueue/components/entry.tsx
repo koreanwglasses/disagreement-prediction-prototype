@@ -16,39 +16,58 @@ import {
 import _ from "lodash";
 import { ActionButton } from "@/lib/components/action-button";
 import { useState } from "react";
+  
+const checkIsVisible = (entryState, panelMode, completionMode) => {
+    return ((entryState?.mod_decision == undefined) == (completionMode == "Needs Review")) && 
+	      ((Boolean(entryState?.panel?.is_active) == (panelMode == "Panel Cases Only")) ||
+	       (panelMode == "All Cases"))
+}
 
 export const EntryRenderer = ({
   entry, 
   listId,
-  sorting,
-  setSorting
+  panelMode,
+  completionMode
 }: {
   entry: Entry,
   listId: Number,
-  sorting: Number[]
-  setSorting: (sorting: Number[]) => void 
+  panelMode: React.ReactNode,
+  completionMode: React.ReactNode
 }) => {
+  
+  const [entryState, setEntryState] = useState<EntryState | null | undefined>(
+    entry.state
+  );
+
   return (
-    <Box
-      sx={{
-        p: 1,
-        m: 1,
-        border: 1,
-        borderRadius: 1,
-        borderColor: "rgba(0,0,0,0.25)",
-        display: "flex",
-        gap: 1,
-      }}
-    >
-      <Box width="48px" flexShrink={0} />
-      <Box display="flex" flexDirection="column" gap={1} flexGrow={1}>
-        <HeaderRenderer entry={entry} />
-        <BodyRenderer entry={entry} />
-        <ReportsRenderer entry={entry} />
-        <PredictionsRenderer entry={entry} />
-        <ActionsRenderer entry={entry} listId={listId} sorting={sorting} setSorting={setSorting}/>
+    checkIsVisible(entryState, panelMode, completionMode) ?
+      <Box
+        sx={{
+          p: 1,
+          m: 1,
+          border: 1,
+          borderRadius: 1,
+          borderColor: "rgba(0,0,0,0.25)",
+          display: "flex",
+          gap: 1,
+        }}
+      >
+        <Box width="48px" flexShrink={0} />
+        <Box display="flex" flexDirection="column" gap={1} flexGrow={1}>
+          <HeaderRenderer entry={entry} />
+          <BodyRenderer entry={entry} />
+          <ReportsRenderer entry={entry} />
+          <PredictionsRenderer entry={entry} />
+          <ActionsRenderer 
+	    entry={entry}
+  	    listId={listId}
+	    panelMode={panelMode}
+	    entryState={entryState}
+	    setEntryState={setEntryState}
+	  />
+        </Box>
       </Box>
-    </Box>
+    : null
   );
 };
 
@@ -173,26 +192,24 @@ const PredictionsRenderer = ({ entry }: { entry: Entry }) => {
 const ActionsRenderer = ({ 
   entry,
   listId,
-  sorting,
-  setSorting
+  panelMode,
+  completionMode,
+  entryState,
+  setEntryState
 }: {
   entry: Entry,
   listId: Number,
-  sorting: Number[],
-  setSorting: (sorting: Number[]) => void,
+  panelMode: React.ReactNode,
+  completionMode: React.ReactNode,
+  entryState: EntryState | null | undefined,
+  setEntryState: (entryState: EntryState | null | undefined) => void, 
 }) => {
-  const [entryState, setEntryState] = useState<EntryState | null | undefined>(
-    entry.state
-  );
   const togglePanelStatus = async () => {
-    setEntryState(
-      await Actions.updatePanelStatus(entry.id, !entryState?.panel?.is_active)
-    );
+    setEntryState(await Actions.updatePanelStatus(entry.id, !entryState?.panel?.is_active));
   };
 
   const submitDecision = async (decision: "approve" | "remove") => {
     setEntryState(await Actions.submitDecision(entry.id, decision));
-    setSorting(sorting.map((val, i) => (i == listId) ? 1 : val ));
   };
 
   return (

@@ -7,36 +7,34 @@ import { useState } from "react";
 import { Entry } from "../model";
 
 export const QueueContainer = ({ entries }: { entries: Entry[] }) => {
-  const modes = ["Needs Review", "Resolved"];
-  
-  const [activeMode, setActiveMode] = useState(modes[0]);
-  
-  const [sorting, setSorting] = useState(entries.map((entry, i) => (
-          (entry?.state?.mod_decision != undefined)  ?  
-            1
-	  : 0
-  )));
-  
+
+  const completionModes = ["Needs Review", "Resolved"];
+  const panelModes = ["All Cases", "Panel Cases Only", "Non-Panel Cases Only"]
+  const [completionMode, setCompletionMode] = useState(completionModes[0]);
+  const [panelMode, setPanelMode] = useState(panelModes[0])
+
   return (
     <>
       <ToolbarRenderer
-        modes={modes}
-        activeMode={activeMode}
-        setActiveMode={setActiveMode}
+        completionModes={completionModes}
+        completionMode={completionMode}
+        setCompletionMode={setCompletionMode}
+	panelModes={panelModes}
+	panelMode={panelMode}
+	setPanelMode={setPanelMode}
       />
       <Box>
-        {sorting.map((val, i) => (
-           ( val == 0 && activeMode == modes[0]) || (val == 1 && activeMode == modes[1] ) ?  
-            (<EntryRenderer 
-	      entry={entries[i]}
+        {entries.map((entry, i) => (
+            <EntryRenderer 
+	      entry={entry}
 	      key={i}
 	      listId={i}
-	      sorting={sorting}
-	      setSorting={setSorting}
-	    />) 
-	  : null
-        ))}
+	      panelMode={panelMode}
+	      completionMode={completionMode}
+	    />
+	))}
       </Box>
     </>
   );
 };
+

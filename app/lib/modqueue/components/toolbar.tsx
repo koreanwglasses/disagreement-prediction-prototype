@@ -14,36 +14,40 @@ import {
 } from "@mdi/js";
 import _ from "lodash";
 import { QueueTabs } from "@/lib/components/queue-tab";
-//import { QueueDropdown } from "@/lib/components/queue-dropdown";
+import { QueueDropdown } from "@/lib/components/queue-dropdown";
 import { useState } from "react";
 
 export const ToolbarRenderer = ({
-  modes,
-  activeMode,
-  setActiveMode,
+  completionModes,
+  completionMode,
+  setCompletionMode,
+  panelModes,
+  panelMode,
+  setPanelMode,
 }: {
-  modes: string[];
-  activeMode: string;
-  setActiveMode: (mode: string) => void;
+  completionModes: string[];
+  completionMode: string;
+  setCompletionMode: (mode: string) => void;
+  panelModes: string[];
+  panelMode: string;
+  setPanelMode: (mode: string) => void;
 }) => {
   return (
     <Box display="flex" flexDirection="column">
       <Box sx={{ fontSize: 30, fontWeight: "semi-bold" }}>Mod Queue</Box>
-      <Box display="flex" flexDirection="row">
+      <Box display="flex" flexDirection="row" sx={{gap: 10}}>
         <QueueTabs
-          modes={modes}
-          activeMode={activeMode}
-          setActiveMode={setActiveMode}
+          modes={completionModes}
+          activeMode={completionMode}
+          setActiveMode={setCompletionMode}
         />
+        <QueueDropdown
+          modes={panelModes}
+          activeMode={panelMode}
+          setActiveMode={setPanelMode}
+        />
+      
       </Box>
     </Box>
   );
 };
-//<QueueDropdown>Dropdown1</QueueDropdown>
-//<QueueDropdown>Dropdown2</QueueDropdown>
-//      <ActionButton
-//	  icon={}
-//	  label="Tab2"
-//	  variant="clear"
-//	  onClick={() => {}}
-//	/>
