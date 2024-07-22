@@ -128,9 +128,6 @@ export const updatePanelState = async ({
     }
   }
 
-  // TODO:
-  // What if a decision was already made before attempting to start a panel?
-  // What to do with existing votes when cancelling a panel?
   await collection.updateOne(
     key,
     { $set: set_vals},
@@ -155,7 +152,22 @@ export const submitDecision = async ({
   const collection = await getEntryStatesCollection();
   const currentState = await collection.findOne(key);
 
-    // If the panel is active, update votes
+  //If there's no panel, the new decision will be the user-inputted value
+  var updated_decision = decision
+  if (currentState?.panel?.is_active) {
+    //If there's a panel, determine what the updated outcome should be
+    const updated_vote_vals = currentState.panel.votes.map(
+  	    (elem) => elem.user_id == user_id ? decision : elem.decision 
+    );
+    updated_decision = computeDecisionFromVotes(updated_vote_vals)
+  }
+  // Update outcome
+  await collection.updateOne(
+	  key,
+          { $set: { mod_decision: updated_decision } },
+          { upsert: true }
+  );
+
   const vote = { user_id, decision };
   if (_.some(currentState?.panel?.votes, (elem) => elem.user_id === user_id)) {
     // If the user already voted, update their vote
@@ -171,24 +183,6 @@ export const submitDecision = async ({
       { $push: { "panel.votes": vote } },
       { upsert: true }
     );
-  }
-  if (!currentState?.panel?.is_active) {
-    // If the panel is not active, update mod_decision directly
-    await collection.updateOne(
-      key,
-      { $set: { mod_decision: decision } },
-      { upsert: true }
-    );
-  } else {
-      if (currentState?.panel?.votes) {
-        if (currentState.panel.votes.length == 2 ||
-	    (currentState.panel.votes.length == 1 && currentState?.panel?.votes[0]?.decision == decision))
-          await collection.updateOne(
-            key,
-            { $set: { mod_decision: decision } },
-            { upsert: true }
-          );
-      }
   }
   return cleanEntryState(await collection.findOne(key));
 };
@@ -220,6 +214,29 @@ const cleanEntryState = (
     // Omit panel votes from the result if the panel is not active
     ...(entryState.panel?.is_active ? [] : ["panel.votes"])
   );
+
+/// Helper function to compute the correct decision based on current vote state
+
+const computeDecisionFromVotes = (votes: String[]) => {
+  var approves = 0
+  var removes = 0
+  for (let i = 0; i < 3; i ++ ) {
+    if (i < votes.length) {
+      if (votes[i] == "") {
+        approves = approves + 1
+      } else {
+        removes = removes + 1
+      }
+    }      
+  }
+  if (approves >= 2) {
+    return "approve"
+  } else if (removes >= 2) {
+    return "remove"
+  } else {
+    return null;
+  }
+}
 
 /// Methods for mocking data
 

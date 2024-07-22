@@ -302,13 +302,11 @@ const ActionsRenderer = ({
 }) => {
   const togglePanelStatus = async () => {
     setEntryState(await Actions.updatePanelStatus(entry.id, !entryState?.panel?.is_active));
-    console.log(entryState?.panel?.votes)
   };
 
   const submitDecision = async (decision: "approve" | "remove") => {
     setEntryState(await Actions.submitDecision(entry.id, decision));
   };
-
   return (
     <Box display="flex" gap={1.5}>
       <ActionButton
