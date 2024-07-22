@@ -34,11 +34,10 @@ export const EntryRenderer = ({
   panelMode: React.ReactNode,
   completionMode: React.ReactNode
 }) => {
-  
   const [entryState, setEntryState] = useState<EntryState | null | undefined>(
     entry.state
   );
-
+  console.log(entryState)
   return (
     checkIsVisible(entryState, panelMode, completionMode) ?
       <Box
@@ -303,6 +302,7 @@ const ActionsRenderer = ({
 }) => {
   const togglePanelStatus = async () => {
     setEntryState(await Actions.updatePanelStatus(entry.id, !entryState?.panel?.is_active));
+    console.log(entryState?.panel?.votes)
   };
 
   const submitDecision = async (decision: "approve" | "remove") => {

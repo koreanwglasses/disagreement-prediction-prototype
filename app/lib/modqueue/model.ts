@@ -107,13 +107,33 @@ export const updatePanelState = async ({
 }) => {
   const key = { entry_id: ObjectId.createFromHexString(entry_id), context_id };
   const collection = await getEntryStatesCollection();
+  const currentState = await collection.findOne(key);
+  let set_vals = {}
+  if (currentState?.mod_decision != undefined) {
+    if (is_active) {
+      //Are you sure? Re-opning closed case
+      set_vals = {"panel.is_active": is_active, "mod_decision": null}
+    } else {
+      // Voids all votes, are you sure?
+      set_vals = {"panel.is_active": is_active, "panel.votes": []}
+    }
+  } else {
+    if (is_active) {
+      // Normal: Activating panel for undecided case
+      set_vals = {"panel.is_active": is_active, "mod_decision": null}
+    } else{
+      // Are there votes from other people? hit em with the "are you sre"?
+	    // else just cancel panel and void all votes
+      set_vals = {"panel.is_active": is_active, "panel.votes": []}
+    }
+  }
 
   // TODO:
   // What if a decision was already made before attempting to start a panel?
   // What to do with existing votes when cancelling a panel?
   await collection.updateOne(
     key,
-    { $set: { "panel.is_active": is_active } },
+    { $set: set_vals},
     { upsert: true }
   );
 
@@ -135,32 +155,40 @@ export const submitDecision = async ({
   const collection = await getEntryStatesCollection();
   const currentState = await collection.findOne(key);
 
-  if (currentState?.panel?.is_active) {
     // If the panel is active, update votes
-    const vote = { user_id, decision };
-
-    if (_.some(currentState.panel.votes, (elem) => elem.user_id === user_id)) {
-      // If the user already voted, update their vote
-      await collection.updateOne(
-        { ...key, "panel.votes": { $elemMatch: { user_id } } },
-        { $set: { "panel.votes.$": vote } },
-        { upsert: true }
-      );
-    } else {
-      // If the user hasn't already voted, push their vote
-      await collection.updateOne(
-        key,
-        { $push: { "panel.votes": vote } },
-        { upsert: true }
-      );
-    }
+  const vote = { user_id, decision };
+  if (_.some(currentState?.panel?.votes, (elem) => elem.user_id === user_id)) {
+    // If the user already voted, update their vote
+    await collection.updateOne(
+      { ...key, "panel.votes": { $elemMatch: { user_id } } },
+      { $set: { "panel.votes.$": vote } },
+      { upsert: true }
+    );
   } else {
+    // If the user hasn't already voted, push their vote
+    await collection.updateOne(
+      key,
+      { $push: { "panel.votes": vote } },
+      { upsert: true }
+    );
+  }
+  if (!currentState?.panel?.is_active) {
     // If the panel is not active, update mod_decision directly
     await collection.updateOne(
       key,
       { $set: { mod_decision: decision } },
       { upsert: true }
     );
+  } else {
+      if (currentState?.panel?.votes) {
+        if (currentState.panel.votes.length == 2 ||
+	    (currentState.panel.votes.length == 1 && currentState?.panel?.votes[0]?.decision == decision))
+          await collection.updateOne(
+            key,
+            { $set: { mod_decision: decision } },
+            { upsert: true }
+          );
+      }
   }
   return cleanEntryState(await collection.findOne(key));
 };
