@@ -1,4 +1,5 @@
-import "server-only";
+"use server";
+
 import { getDB } from "@/lib/mongodb";
 import hash from "string-hash";
 import {
@@ -6,7 +7,7 @@ import {
   adjectives,
   colors,
 } from "unique-names-generator";
-import { ObjectId, UpdateFilter } from "mongodb";
+import { ObjectId } from "mongodb";
 import _ from "lodash";
 
 // Structures of the Entry/State objects as they are in the DB
@@ -28,7 +29,7 @@ interface EntryStateModel {
   entry_id: ObjectId;
   context_id: string;
 
-  mod_decision?: "approve" | "remove";
+  mod_decision?: Decision;
   panel?: PanelStateModel;
 }
 
@@ -36,25 +37,31 @@ interface PanelStateModel {
   is_active: boolean;
   votes: {
     user_id: string;
-    decision: "approve" | "remove";
+    decision: Decision;
   }[];
 }
 
 /// Structures of the Entry/State objects as they are sent to the client
-export type EntryState = Omit<EntryStateModel, "entry_id" | "context_id">;
+export type Decision = "approve" | "remove" | null;
+export type EntryState = Omit<EntryStateModel, "entry_id"> & {
+  entry_id: string;
+};
 export type PanelState = PanelStateModel;
 export type Entry = EntryModel & {
   id: string;
   state?: EntryState;
 };
 
-/// Methods for fetching/updating data (Public)
+/** TODO: Get context_id and user_id from session */
+const DEFAULT_CONTEXT_ID = "XXXXX";
+const DEFAULT_USER_ID = "YYYYY";
 
+/// Methods for fetching/updating data (Public)
 export const fetchEntries = async ({
-  context_id,
+  context_id = DEFAULT_CONTEXT_ID,
   limit = 20,
 }: {
-  context_id: string;
+  context_id?: string;
   limit?: number;
 }) => {
   const collection = await getEntriesCollection();
@@ -98,78 +105,74 @@ export const fetchEntries = async ({
 
 export const updatePanelState = async ({
   entry_id,
-  context_id,
+  context_id = DEFAULT_CONTEXT_ID,
   is_active,
 }: {
   entry_id: string;
-  context_id: string;
+  context_id?: string;
   is_active: boolean;
 }) => {
   const key = { entry_id: ObjectId.createFromHexString(entry_id), context_id };
   const collection = await getEntryStatesCollection();
   const currentState = await collection.findOne(key);
-  let set_vals = {}
+  let set_vals = {};
   if (currentState?.mod_decision != undefined) {
     if (is_active) {
       //Are you sure? Re-opning closed case
-      set_vals = {"panel.is_active": is_active, "mod_decision": null}
+      set_vals = { "panel.is_active": is_active, mod_decision: null };
     } else {
       // Voids all votes, are you sure?
-      set_vals = {"panel.is_active": is_active, "panel.votes": []}
+      set_vals = { "panel.is_active": is_active, "panel.votes": [] };
     }
   } else {
     if (is_active) {
       // Normal: Activating panel for undecided case
-      set_vals = {"panel.is_active": is_active, "mod_decision": null}
-    } else{
+      set_vals = { "panel.is_active": is_active, mod_decision: null };
+    } else {
       // Are there votes from other people? hit em with the "are you sre"?
-	    // else just cancel panel and void all votes
-      set_vals = {"panel.is_active": is_active, "panel.votes": []}
+      // else just cancel panel and void all votes
+      set_vals = { "panel.is_active": is_active, "panel.votes": [] };
     }
   }
 
-  await collection.updateOne(
-    key,
-    { $set: set_vals},
-    { upsert: true }
-  );
+  await collection.updateOne(key, { $set: set_vals }, { upsert: true });
 
   return cleanEntryState(await collection.findOne(key));
 };
 
 export const submitDecision = async ({
   entry_id,
-  context_id,
-  user_id,
+  context_id = DEFAULT_CONTEXT_ID,
+  user_id = DEFAULT_USER_ID,
   decision,
 }: {
   entry_id: string;
-  context_id: string;
-  user_id: string;
-  decision: EntryStateModel["mod_decision"];
+  context_id?: string;
+  user_id?: string;
+  decision: Decision;
 }) => {
   const key = { entry_id: ObjectId.createFromHexString(entry_id), context_id };
   const collection = await getEntryStatesCollection();
   const currentState = await collection.findOne(key);
 
   //If there's no panel, the new decision will be the user-inputted value
-  var updated_decision = decision
+  let updated_decision = decision;
   if (currentState?.panel?.is_active) {
     //If there's a panel, determine what the updated outcome should be
     if (currentState?.panel?.votes) {
-      const updated_vote_vals = currentState.panel.votes.map(
-    	    (elem) => elem.user_id == user_id ? decision : elem.decision 
+      const updated_vote_vals = currentState.panel.votes.map((elem) =>
+        elem.user_id == user_id ? decision : elem.decision
       );
-      updated_decision = computeDecisionFromVotes(updated_vote_vals)
+      updated_decision = computeDecisionFromVotes(updated_vote_vals);
     } else {
       updated_decision = null;
     }
   }
   // Update outcome
   await collection.updateOne(
-	  key,
-          { $set: { mod_decision: updated_decision } },
-          { upsert: true }
+    key,
+    { $set: { mod_decision: updated_decision } },
+    { upsert: true }
   );
 
   const vote = { user_id, decision };
@@ -208,39 +211,23 @@ const getEntryStatesCollection = async () => {
 const cleanEntryState = (
   entryState: EntryStateModel | null
 ): EntryState | null =>
-  entryState &&
-  _.omit(
-    entryState,
-    "_id",
-    "entry_id",
-    "context_id",
-
-    // Omit panel votes from the result if the panel is not active
-    ...(entryState.panel?.is_active ? [] : ["panel.votes"])
-  );
+  entryState && {
+    ..._.omit(entryState, "_id"),
+    entry_id: entryState.entry_id.toString(),
+  };
 
 /// Helper function to compute the correct decision based on current vote state
 
-const computeDecisionFromVotes = (votes: String[]) => {
-  var approves = 0
-  var removes = 0
-  for (let i = 0; i < 3; i ++ ) {
-    if (i < votes.length) {
-      if (votes[i] == "") {
-        approves = approves + 1
-      } else {
-        removes = removes + 1
-      }
-    }      
-  }
-  if (approves >= 2) {
-    return "approve"
-  } else if (removes >= 2) {
-    return "remove"
+const computeDecisionFromVotes = (votes: Decision[]) => {
+  const counts = _.countBy(votes);
+  if (counts["approve"] >= 2) {
+    return "approve";
+  } else if (counts["removes"] >= 2) {
+    return "remove";
   } else {
     return null;
   }
-}
+};
 
 /// Methods for mocking data
 

@@ -1,21 +1,9 @@
 "use client";
 
-import type { Entry, EntryState } from "../model";
-import * as Actions from "../actions";
-import { Avatar, Box } from "@mui/material";
-import Icon from "@mdi/react";
-import {
-  mdiFlag,
-  mdiCheck,
-  mdiClose,
-  mdiAccountGroupOutline,
-  mdiAccount,
-  mdiAccountOutline,
-} from "@mdi/js";
+import { Box } from "@mui/material";
 import _ from "lodash";
 import { QueueTabs } from "@/lib/components/queue-tab";
 import { QueueDropdown } from "@/lib/components/queue-dropdown";
-import { useState } from "react";
 
 export const ToolbarRenderer = ({
   completionModes,
@@ -35,7 +23,7 @@ export const ToolbarRenderer = ({
   return (
     <Box display="flex" flexDirection="column">
       <Box sx={{ fontSize: 30, fontWeight: "semi-bold" }}>Mod Queue</Box>
-      <Box display="flex" flexDirection="row" sx={{gap: 10}}>
+      <Box display="flex" flexDirection="row" sx={{ gap: 10 }}>
         <QueueTabs
           modes={completionModes}
           activeMode={completionMode}
@@ -46,7 +34,6 @@ export const ToolbarRenderer = ({
           activeMode={panelMode}
           setActiveMode={setPanelMode}
         />
-      
       </Box>
     </Box>
   );
