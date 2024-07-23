@@ -14,7 +14,7 @@ export const QueueContainer = ({ entries }: { entries: Entry[] }) => {
   const [panelMode, setPanelMode] = useState(panelModes[0])
 
   return (
-    <>
+    <Box style={{width: "66%"}}>
       <ToolbarRenderer
         completionModes={completionModes}
         completionMode={completionMode}
@@ -34,7 +34,7 @@ export const QueueContainer = ({ entries }: { entries: Entry[] }) => {
 	    />
 	))}
       </Box>
-    </>
+    </Box>
   );
 };
 

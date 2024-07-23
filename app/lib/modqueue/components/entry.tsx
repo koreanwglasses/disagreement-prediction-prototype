@@ -53,7 +53,7 @@ export const EntryRenderer = ({
       >
         <Box width="48px" flexShrink={0} />
         <Box display="flex" flexDirection="column" gap={1} flexGrow={1}>
-          <HeaderRenderer entry={entry} />
+          <HeaderRenderer entry={entry} finalDecision={entryState?.mod_decision}/>
           <BodyRenderer entry={entry} />
           <ReportsRenderer entry={entry} />
           <PredictionsRenderer entry={entry} />
@@ -70,16 +70,26 @@ export const EntryRenderer = ({
   );
 };
 
-const HeaderRenderer = ({ entry }: { entry: Entry }) => {
+const HeaderRenderer = ({ entry, finalDecision }: { entry: Entry, finalDecision: React.ReactNode }) => {
   const subreddit = "r/changemyview";
-
+  var decisionMarkerStyle = {
+    backgroundColor: finalDecision == "approve" ? "#00f": "#f00",
+    color: "white",
+    borderRadius: 1,
+    textAlign: "center",
+    marginLeft: "auto",
+    px: 3,
+    py: 1,
+    fontSize: "16px",
+    fontWeight: "bold"
+  }
   return (
     <Box
       display="flex"
       gap={0.5}
       color="rgba(0,0,0,0.5)"
       fontSize="0.75em"
-      alignItems="center"
+      alignItems="end"
     >
       <Avatar alt={subreddit} src="/cmv.png" sx={{ width: 24, height: 24 }} />
       <span>{subreddit}</span>
@@ -90,6 +100,13 @@ const HeaderRenderer = ({ entry }: { entry: Entry }) => {
           {entry.flair}
         </Box>
       )}
+      {
+          finalDecision ?
+	    <Box sx={decisionMarkerStyle}>
+	      {finalDecision.charAt(0).toUpperCase() + finalDecision.slice(1) + "d"}
+	    </Box>
+  	    : null
+      }
     </Box>
   );
 };
@@ -338,9 +355,9 @@ const ActionsRenderer = ({
                 key={i}
                 color={
                   decision === "approve"
-                    ? "#f00"
-                    : decision === "remove"
                     ? "#00f"
+                    : decision === "remove"
+                    ? "#f00"
                     : "#888"
                 }
               />

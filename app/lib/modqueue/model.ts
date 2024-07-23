@@ -156,10 +156,14 @@ export const submitDecision = async ({
   var updated_decision = decision
   if (currentState?.panel?.is_active) {
     //If there's a panel, determine what the updated outcome should be
-    const updated_vote_vals = currentState.panel.votes.map(
-  	    (elem) => elem.user_id == user_id ? decision : elem.decision 
-    );
-    updated_decision = computeDecisionFromVotes(updated_vote_vals)
+    if (currentState?.panel?.votes) {
+      const updated_vote_vals = currentState.panel.votes.map(
+    	    (elem) => elem.user_id == user_id ? decision : elem.decision 
+      );
+      updated_decision = computeDecisionFromVotes(updated_vote_vals)
+    } else {
+      updated_decision = null;
+    }
   }
   // Update outcome
   await collection.updateOne(
