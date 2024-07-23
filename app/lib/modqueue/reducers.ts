@@ -58,6 +58,7 @@ export const modqueueSlice = createSlice({
       .addCase(fetchEntries.fulfilled, (state, action) => {
         state.entries = action.payload;
       })
+      // TODO: Add Optimistic Updates
       .addCase(updatePanelState.fulfilled, updateEntryStateReducer)
       .addCase(submitDecision.fulfilled, updateEntryStateReducer),
 });
