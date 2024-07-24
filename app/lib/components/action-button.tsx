@@ -1,30 +1,49 @@
-import React from "react";
-import { Box, ButtonBase, ButtonBaseProps } from "@mui/material";
+import React, { useState } from "react";
+import {
+  Box,
+  ButtonBase,
+  ButtonBaseProps,
+  CircularProgress,
+  alpha,
+} from "@mui/material";
 
 export const ActionButton = ({
   icon,
   label,
   variant = "outlined",
+  optimistic = false,
+  onClick,
   sx = [],
   ...props
 }: {
   icon: React.ReactNode;
   label: React.ReactNode;
   variant?: "filled" | "outlined";
+  /** If true, will not show a loading icon while the action is pending */
+  optimistic?: boolean;
 } & ButtonBaseProps) => {
   const variantStyle = {
     filled: {
       bgcolor: "#0079d3",
       color: "#fff",
+      "&.pending": {
+        bgcolor: "#ccc",
+      },
     },
     outlined: {
       border: 1.5,
       borderColor: "rgba(0,0,0,0.5)",
+      "&.pending": {
+        opacity: "0.5",
+      },
     },
   }[variant];
 
+  const [status, setStatus] = useState<"idle" | "pending" | "error">("idle");
+
   return (
     <ButtonBase
+      className={status}
       sx={[
         {
           py: 0.8,
@@ -36,9 +55,22 @@ export const ActionButton = ({
         variantStyle,
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
+      onClick={async (e) => {
+        if (!optimistic) setStatus("pending");
+        try {
+          await onClick?.(e);
+          setStatus("idle");
+        } catch {
+          setStatus("error");
+        }
+      }}
       {...props}
     >
-      {icon}
+      {status === "pending" ? (
+        <CircularProgress color="inherit" size={17} />
+      ) : (
+        icon
+      )}
       <Box fontWeight="bold" fontSize=".85em">
         {label}
       </Box>

@@ -37,14 +37,15 @@ const initialState = {
 
 type State = typeof initialState;
 
+const findIndexOfEntryById = (state: State, id?: string) =>
+  state.entries.findIndex((entry) => entry.id === id);
+
 const updateEntryStateReducer = (
   state: State,
   action: PayloadAction<EntryState | null>
 ) => {
   if (action.payload) {
-    const i = state.entries.findIndex(
-      (entry) => entry.id === action.payload!.entry_id
-    );
+    const i = findIndexOfEntryById(state, action.payload!.entry_id);
     state.entries[i].state = action.payload;
   }
 };
@@ -58,8 +59,18 @@ export const modqueueSlice = createSlice({
       .addCase(fetchEntries.fulfilled, (state, action) => {
         state.entries = action.payload;
       })
-      // TODO: Add Optimistic Updates
+      //
+      .addCase(updatePanelState.pending, (state, action) => {
+        // Optimistically update the state of the panel
+        const { entry_id, is_active } = action.meta.arg;
+        const i = findIndexOfEntryById(state, action.meta.arg.entry_id);
+        ((state.entries[i].state ??= { entry_id }).panel ??= {
+          votes: [],
+          is_active,
+        }).is_active = is_active;
+      })
       .addCase(updatePanelState.fulfilled, updateEntryStateReducer)
+      //
       .addCase(submitDecision.fulfilled, updateEntryStateReducer),
 });
 
