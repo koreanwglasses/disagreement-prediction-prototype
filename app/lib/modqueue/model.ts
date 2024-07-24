@@ -43,8 +43,9 @@ interface PanelStateModel {
 
 /// Structures of the Entry/State objects as they are sent to the client
 export type Decision = "approve" | "remove" | null;
-export type EntryState = Omit<EntryStateModel, "entry_id"> & {
+export type EntryState = Omit<EntryStateModel, "entry_id" | "context_id"> & {
   entry_id: string;
+  context_id?: string;
 };
 export type PanelState = PanelStateModel;
 export type Entry = EntryModel & {

@@ -279,18 +279,18 @@ const PredictionScoresVisualization = ({
 
 const ActionsRenderer = ({ entry }: { entry: Entry }) => {
   const dispatch = useAppDispatch();
-  const togglePanelStatus = async () => {
+  const togglePanelStatus = () =>
     dispatch(
       Reducers.updatePanelState({
         entry_id: entry.id,
         is_active: !entry.state?.panel?.is_active,
       })
-    );
-  };
+    ).unwrap();
 
-  const submitDecision = async (decision: "approve" | "remove") => {
-    dispatch(Reducers.submitDecision({ entry_id: entry.id, decision: decision}));
-  };
+  const submitDecision = (decision: "approve" | "remove") =>
+    dispatch(
+      Reducers.submitDecision({ entry_id: entry.id, decision })
+    ).unwrap();
 
   const wipeVote = async() => {
     dispatch(Reducers.wipeVote({entry_id: entry.id}));
@@ -327,8 +327,9 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
         label={entry?.state?.panel?.is_active ? "Cancel Panel" : (curDecision ? "Re-open as Panel"  : "Panel")}
         variant="outlined"
         onClick={togglePanelStatus}
-      /> 
-      {entry?.state?.panel?.is_active && (
+        optimistic
+      />
+      {entry.state?.panel?.is_active && (
         <Box display="flex" alignItems="center">
           {[0, 1, 2].map((i) => {
             const decision = entry.state?.panel?.votes?.[i]?.decision;
