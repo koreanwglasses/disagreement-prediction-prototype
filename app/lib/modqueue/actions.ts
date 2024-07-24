@@ -32,3 +32,13 @@ export const submitDecision = async (
     decision,
   });
 };
+
+export const wipeCase = async (
+  entry_id: string,
+) => {
+  return await Model.wipeCase({
+    entry_id,
+    context_id,
+    user_id,
+  });
+};

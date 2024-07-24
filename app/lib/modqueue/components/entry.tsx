@@ -12,6 +12,7 @@ import {
   mdiAccount,
   mdiAccountOutline,
   mdiAccountGroup,
+  mdiArrowULeftTop
 } from "@mdi/js";
 import _ from "lodash";
 import { ActionButton } from "@/lib/components/action-button";
@@ -37,25 +38,25 @@ export const EntryRenderer = ({
   const [entryState, setEntryState] = useState<EntryState | null | undefined>(
     entry.state
   );
-  console.log(entryState)
   return (
     checkIsVisible(entryState, panelMode, completionMode) ?
       <Box
         sx={{
-          p: 1,
+	  paddingLeft: 1,
+	  paddingBottom: 1,
           m: 1,
-          border: 1,
           borderRadius: 1,
+          border: 1,
           borderColor: "rgba(0,0,0,0.25)",
           display: "flex",
-          gap: 1,
+	  gap: 1,
         }}
       >
         <Box width="48px" flexShrink={0} />
         <Box display="flex" flexDirection="column" gap={1} flexGrow={1}>
           <HeaderRenderer entry={entry} finalDecision={entryState?.mod_decision}/>
-          <BodyRenderer entry={entry} />
-          <ReportsRenderer entry={entry} />
+          <BodyRenderer entry={entry}/>
+          <ReportsRenderer entry={entry}/>
           <PredictionsRenderer entry={entry} />
           <ActionsRenderer 
 	    entry={entry}
@@ -73,9 +74,8 @@ export const EntryRenderer = ({
 const HeaderRenderer = ({ entry, finalDecision }: { entry: Entry, finalDecision: React.ReactNode }) => {
   const subreddit = "r/changemyview";
   var decisionMarkerStyle = {
-    backgroundColor: finalDecision == "approve" ? "#00f": "#f00",
+    backgroundColor: finalDecision == "approve" ? "#7474fc": "#ff6161",
     color: "white",
-    borderRadius: 1,
     textAlign: "center",
     marginLeft: "auto",
     px: 3,
@@ -123,6 +123,7 @@ const BodyRenderer = ({ entry }: { entry: Entry }) => {
           px: 1,
           borderLeft: 1,
           borderLeftStyle: "dashed",
+	  marginRight: 1
         }}
       >
         {entry.text}
@@ -142,6 +143,7 @@ const ReportsRenderer = ({ entry }: { entry: Entry }) => {
           display: "flex",
           borderRadius: 1,
           gap: 1,
+	  marginRight: 1
         }}
       >
         <Icon
@@ -178,6 +180,7 @@ const PredictionsRenderer = ({ entry }: { entry: Entry }) => {
           display: "flex",
           borderRadius: 1,
           gap: 1,
+	  marginRight: 1
         }}
       >
         <Icon
@@ -232,7 +235,7 @@ const PredictionScoresVisualization = ({
         bottom={barOffsetBottom}
         width={`${s[0]}%`}
         height={barHeight}
-        bgcolor="#00f"
+        bgcolor="#7474fc"
       />
       <Box
         position="absolute"
@@ -248,7 +251,7 @@ const PredictionScoresVisualization = ({
         bottom={barOffsetBottom}
         width={`${s[2]}%`}
         height={barHeight}
-        bgcolor="#f00"
+        bgcolor="#ff6161"
       />
 
       {/* Ticks */}
@@ -324,26 +327,51 @@ const ActionsRenderer = ({
   const submitDecision = async (decision: "approve" | "remove") => {
     setEntryState(await Actions.submitDecision(entry.id, decision));
   };
+ 
+  const wipeCase = async() => {
+    setEntryState(await Actions.wipeCase(entry.id));
+  }
+
+  const curDecision= entryState?.mod_decision
+  //To-do: If there's a resolved case thats in panel mode, that the current user voted on, there should be a "change vote" button instead of an undo action button
   return (
     <Box display="flex" gap={1.5}>
-      <ActionButton
-        icon={<Icon path={mdiCheck} size={0.7} />}
-        label="Approve"
-        variant="filled"
-        onClick={() => submitDecision("approve")}
-      />
-      <ActionButton
-        icon={<Icon path={mdiClose} size={0.7} />}
-        label="Remove"
-        variant="outlined"
-        onClick={() => submitDecision("remove")}
-      />
-      <ActionButton
-        icon={<Icon path={mdiAccountGroupOutline} size={0.7} />}
-        label={entryState?.panel?.is_active ? "Cancel Panel" : "Panel"}
-        variant="outlined"
-        onClick={togglePanelStatus}
-      />
+      { !curDecision ? 
+	<>
+          <ActionButton
+            icon={<Icon path={mdiCheck} size={0.7} />}
+            label="Approve"
+            variant="filled"
+            onClick={() => submitDecision("approve")}
+          /> 
+          <ActionButton
+            icon={<Icon path={mdiClose} size={0.7} />}
+            label="Remove"
+            variant="outlined"
+            onClick={() => submitDecision("remove")}
+          />
+        </> :
+        <ActionButton
+          icon={<Icon path={mdiArrowULeftTop} size={0.7} />}
+	  label={"Undo " + curDecision[0].toUpperCase() + curDecision.slice(1,-1) + "al"}
+  	  variant="outlined"
+	  onClick={wipeCase}
+        />
+      }
+      { !entryState?.mod_decision ?
+        <ActionButton
+          icon={<Icon path={mdiAccountGroupOutline} size={0.7} />}
+          label={entryState?.panel?.is_active ? "Cancel Panel" : "Panel"}
+          variant="outlined"
+          onClick={togglePanelStatus}
+        /> :
+        <ActionButton
+          icon={<Icon path={mdiAccountGroupOutline} size={0.7} />}
+          label={entryState?.panel?.is_active ? "Cancel Panel" : "Re-open as Panel"}
+          variant="outlined"
+          onClick={togglePanelStatus}
+        />  
+      }
       {entryState?.panel?.is_active && (
         <Box display="flex" alignItems="center">
           {[0, 1, 2].map((i) => {
@@ -355,9 +383,9 @@ const ActionsRenderer = ({
                 key={i}
                 color={
                   decision === "approve"
-                    ? "#00f"
+                    ? "#7474fc"
                     : decision === "remove"
-                    ? "#f00"
+                    ? "#ff6161"
                     : "#888"
                 }
               />

@@ -137,6 +137,25 @@ export const updatePanelState = async ({
   return cleanEntryState(await collection.findOne(key));
 };
 
+export const wipeCase  = async({
+  entry_id,
+  context_id,
+  user_id
+}: {
+  entry_id: string;
+  context_id: string;
+  user_id: string;
+}) => {
+  const key = { entry_id: ObjectId.createFromHexString(entry_id), context_id };
+  const collection = await getEntryStatesCollection();
+  await collection.updateOne(
+    key,
+    { $set: {"mod_decision": null, "panel.votes": []}},
+    { upsert: true }
+  );
+  return cleanEntryState(await collection.findOne(key))
+}
+
 export const submitDecision = async ({
   entry_id,
   context_id,
