@@ -1,15 +1,14 @@
-import { QueueContainer } from "@/lib/modqueue/components/queue-container";
-import { EntryRenderer } from "@/lib/modqueue/components/entry";
-import { ToolbarRenderer } from "@/lib/modqueue/components/toolbar";
-import { fetchEntries } from "@/lib/modqueue/actions";
-import { Box } from "@mui/material";
+"use client";
 
-const Modqueue = async () => {
-  const entries = await fetchEntries();
+import { QueueContainer } from "@/lib/modqueue/components/queue-container";
+import { Provider } from "react-redux";
+import { store } from "@/lib/modqueue/reducers";
+
+const Modqueue = () => {
   return (
-    <> 
-      <QueueContainer entries={entries}/>  
-    </>
+    <Provider store={store}>
+      <QueueContainer />
+    </Provider>
   );
 };
 export default Modqueue;

@@ -1,7 +1,6 @@
 "use client";
 
-import type { Entry, EntryState } from "../model";
-import * as Actions from "../actions";
+import type { Entry } from "../model";
 import { Avatar, Box } from "@mui/material";
 import Icon from "@mdi/react";
 import {
@@ -16,64 +15,39 @@ import {
 } from "@mdi/js";
 import _ from "lodash";
 import { ActionButton } from "@/lib/components/action-button";
-import { useState } from "react";
-  
-const checkIsVisible = (entryState, panelMode, completionMode) => {
-    return ((entryState?.mod_decision == undefined) == (completionMode == "Needs Review")) && 
-	      ((Boolean(entryState?.panel?.is_active) == (panelMode == "Panel Cases Only")) ||
-	       (panelMode == "All Cases"))
-}
+import { useAppDispatch } from "../reducers";
+import * as Reducers from "../reducers";
 
-export const EntryRenderer = ({
-  entry,
-  listId,
-  panelMode,
-  completionMode
-}: {
-  entry: Entry,
-  listId: Number,
-  panelMode: React.ReactNode,
-  completionMode: React.ReactNode
-}) => {
-  const [entryState, setEntryState] = useState<EntryState | null | undefined>(
-    entry.state
-  );
+export const EntryRenderer = ({ entry }: { entry: Entry }) => {
   return (
-    checkIsVisible(entryState, panelMode, completionMode) ?
-      <Box
-        sx={{
-	  paddingLeft: 1,
-	  paddingBottom: 1,
-          m: 1,
-          borderRadius: 1,
-          border: 1,
-          borderColor: "rgba(0,0,0,0.25)",
-          display: "flex",
-	  gap: 1,
-        }}
-      >
-        <Box width="48px" flexShrink={0} />
-        <Box display="flex" flexDirection="column" gap={1} flexGrow={1}>
-          <HeaderRenderer entry={entry} finalDecision={entryState?.mod_decision}/>
-          <BodyRenderer entry={entry}/>
-          <ReportsRenderer entry={entry}/>
-          <PredictionsRenderer entry={entry} />
-          <ActionsRenderer 
-	    entry={entry}
-  	    listId={listId}
-	    panelMode={panelMode}
-	    entryState={entryState}
-	    setEntryState={setEntryState}
-	  />
-        </Box>
+    <Box
+      sx={{
+        p: 1,
+        m: 1,
+        border: 1,
+        borderRadius: 1,
+        borderColor: "rgba(0,0,0,0.25)",
+        display: "flex",
+        gap: 1,
+      }}
+    >
+      <Box width="48px" flexShrink={0} />
+      <Box display="flex" flexDirection="column" gap={1} flexGrow={1}>
+        <HeaderRenderer entry={entry} />
+        <BodyRenderer entry={entry} />
+        <ReportsRenderer entry={entry} />
+        <PredictionsRenderer entry={entry} />
+        <ActionsRenderer entry={entry} />
+      </Box>
     </Box>
-    : null
   );
 };
 
-const HeaderRenderer = ({ entry, finalDecision }: { entry: Entry, finalDecision: React.ReactNode }) => {
+const HeaderRenderer = ({ entry }: { entry: Entry }) => {
+  const finalDecision = entry.state?.mod_decision;
+
   const subreddit = "r/changemyview";
-  var decisionMarkerStyle = {
+  const decisionMarkerStyle = {
     backgroundColor: finalDecision == "approve" ? "#7474fc": "#ff6161",
     color: "white",
     textAlign: "center",
@@ -81,8 +55,8 @@ const HeaderRenderer = ({ entry, finalDecision }: { entry: Entry, finalDecision:
     px: 3,
     py: 1,
     fontSize: "16px",
-    fontWeight: "bold"
-  }
+    fontWeight: "bold",
+  };
   return (
     <Box
       display="flex"
@@ -100,13 +74,11 @@ const HeaderRenderer = ({ entry, finalDecision }: { entry: Entry, finalDecision:
           {entry.flair}
         </Box>
       )}
-      {
-          finalDecision ?
-	    <Box sx={decisionMarkerStyle}>
-	      {finalDecision.charAt(0).toUpperCase() + finalDecision.slice(1) + "d"}
-	    </Box>
-  	    : null
-      }
+      {finalDecision ? (
+        <Box sx={decisionMarkerStyle}>
+          {finalDecision.charAt(0).toUpperCase() + finalDecision.slice(1) + "d"}
+        </Box>
+      ) : null}
     </Box>
   );
 };
@@ -305,34 +277,26 @@ const PredictionScoresVisualization = ({
   );
 };
 
-const ActionsRenderer = ({
-  entry,
-  listId,
-  panelMode,
-  completionMode,
-  entryState,
-  setEntryState
-}: {
-  entry: Entry,
-  listId: Number,
-  panelMode: React.ReactNode,
-  completionMode: React.ReactNode,
-  entryState: EntryState | null | undefined,
-  setEntryState: (entryState: EntryState | null | undefined) => void, 
-}) => {
+const ActionsRenderer = ({ entry }: { entry: Entry }) => {
+  const dispatch = useAppDispatch();
   const togglePanelStatus = async () => {
-    setEntryState(await Actions.updatePanelStatus(entry.id, !entryState?.panel?.is_active));
+    dispatch(
+      Reducers.updatePanelState({
+        entry_id: entry.id,
+        is_active: !entry.state?.panel?.is_active,
+      })
+    );
   };
 
   const submitDecision = async (decision: "approve" | "remove") => {
-    setEntryState(await Actions.submitDecision(entry.id, decision));
+    dispatch(Reducers.submitDecision({ entry_id: entry.id, decision: decision}));
   };
- 
-  const wipeCase = async() => {
-    setEntryState(await Actions.wipeCase(entry.id));
+
+  const wipeVote = async() => {
+    dispatch(Reducers.wipeVote({entry_id: entry.id}));
   }
 
-  const curDecision= entryState?.mod_decision
+  const curDecision = entry?.state?.mod_decision
   //To-do: If there's a resolved case thats in panel mode, that the current user voted on, there should be a "change vote" button instead of an undo action button
   return (
     <Box display="flex" gap={1.5}>
@@ -355,27 +319,19 @@ const ActionsRenderer = ({
           icon={<Icon path={mdiArrowULeftTop} size={0.7} />}
 	  label={"Undo " + curDecision[0].toUpperCase() + curDecision.slice(1,-1) + "al"}
   	  variant="outlined"
-	  onClick={wipeCase}
+	  onClick={wipeVote}
         />
       }
-      { !entryState?.mod_decision ?
-        <ActionButton
-          icon={<Icon path={mdiAccountGroupOutline} size={0.7} />}
-          label={entryState?.panel?.is_active ? "Cancel Panel" : "Panel"}
-          variant="outlined"
-          onClick={togglePanelStatus}
-        /> :
-        <ActionButton
-          icon={<Icon path={mdiAccountGroupOutline} size={0.7} />}
-          label={entryState?.panel?.is_active ? "Cancel Panel" : "Re-open as Panel"}
-          variant="outlined"
-          onClick={togglePanelStatus}
-        />  
-      }
-      {entryState?.panel?.is_active && (
+      <ActionButton
+        icon={<Icon path={mdiAccountGroupOutline} size={0.7} />}
+        label={entry?.state?.panel?.is_active ? "Cancel Panel" : (curDecision ? "Re-open as Panel"  : "Panel")}
+        variant="outlined"
+        onClick={togglePanelStatus}
+      /> 
+      {entry?.state?.panel?.is_active && (
         <Box display="flex" alignItems="center">
           {[0, 1, 2].map((i) => {
-            const decision = entryState?.panel?.votes?.[i]?.decision;
+            const decision = entry.state?.panel?.votes?.[i]?.decision;
             return (
               <Icon
                 path={decision ? mdiAccount : mdiAccountOutline}
