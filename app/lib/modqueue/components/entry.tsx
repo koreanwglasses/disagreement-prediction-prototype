@@ -1,7 +1,13 @@
 "use client";
 
 import type { Entry } from "../model";
-import { Avatar, Box } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails
+} from "@mui/material";
 import Icon from "@mdi/react";
 import {
   mdiFlag,
@@ -11,7 +17,8 @@ import {
   mdiAccount,
   mdiAccountOutline,
   mdiAccountGroup,
-  mdiArrowULeftTop
+  mdiArrowULeftTop,
+  mdiChevronDown
 } from "@mdi/js";
 import _ from "lodash";
 import { ActionButton } from "@/lib/components/action-button";
@@ -145,40 +152,39 @@ const ReportsRenderer = ({ entry }: { entry: Entry }) => {
 const PredictionsRenderer = ({ entry }: { entry: Entry }) => {
   return (
     entry.panel_predictions && (
-      <Box
+      <Accordion
         sx={{
-          p: 1,
           bgcolor: "#ffefcc",
-          display: "flex",
           borderRadius: 1,
-          gap: 1,
-	  marginRight: 1
+	  boxShadow: "none",
         }}
       >
-        <Icon
-          path={mdiAccountGroup}
-          size={1}
-          color="#ffc33d"
-          className="flagIcon"
-          style={{ flexShrink: 0 }}
-        />
-        <Box>
-          <Box component="h3" fontWeight="bold">
-            Predicted Panel
-          </Box>
-          <PredictionScoresVisualization scores={entry.panel_predictions} />
-          Our model thinks{" "}
-          <strong>
-            {(entry.panel_predictions.approve * 100).toFixed(0)}%
-          </strong>{" "}
-          of moderators on your mod team would support approval, and{" "}
-          <strong>{(entry.panel_predictions.remove * 100).toFixed(0)}%</strong>{" "}
-          of moderators would support removal. We are unsure how{" "}
-          <strong>{(entry.panel_predictions.unsure * 100).toFixed(0)}%</strong>{" "}
-          of moderators would act. Because consensus for this case is low, we
-          recommend panel review. How are these predictions generated?
-        </Box>
-      </Box>
+          <AccordionSummary
+	    expandIcon={<Icon path={mdiChevronDown} size={1}/>}
+	    sx={{borderRadius: "4px"}}>  
+              <Icon
+                path={mdiAccountGroup}
+                size={1}
+                color="#ffc33d"
+                className="flagIcon"
+                style={{ flexShrink: 0 }}
+              />
+              <Box component="h3" fontWeight="bold" paddingLeft="8px">Predicted Panel</Box>
+          </AccordionSummary>  
+	  <AccordionDetails sx={{width: "100%"}}>
+            <PredictionScoresVisualization scores={entry.panel_predictions} />
+            If every moderator on your team took a vote, our model predicts{" "}
+            <strong>
+              {(entry.panel_predictions.approve * 100).toFixed(0)}%
+            </strong>{" "}
+            would support approval, and{" "}
+            <strong>{(entry.panel_predictions.remove * 100).toFixed(0)}%</strong>{" "}
+            support removal. We are unsure how{" "}
+            <strong>{(entry.panel_predictions.unsure * 100).toFixed(0)}%</strong>{" "}
+            of moderators would act. Because consensus for this case is low, we
+            recommend panel review.
+          </AccordionDetails>
+      </Accordion>
     )
   );
 };
@@ -190,7 +196,7 @@ const PredictionScoresVisualization = ({
 }) => {
   /** Shorthand for scores as percentages */
   const s = [scores.approve * 100, scores.unsure * 100, scores.remove * 100];
-  const maxWidth = "600px";
+  const maxWidth = "650px";
   const totalHeight = "40px";
   const barHeight = "6px";
   const barOffsetBottom = "6px";
