@@ -36,11 +36,10 @@ export const wipeVote = createAsyncThunk(
 );
 
 ///// Create slice
-
-  //user_id: "XXXXX",
-  //context_id: "XXXXX",
 const initialState = {
-  entries: [] as Entry[]
+  entries: [] as Entry[],
+  user_id: "XXXXX",
+  context_id: "YYYYY"
 };
 
 type State = typeof initialState;

@@ -40,7 +40,6 @@ export const ActionButton = ({
   }[variant];
 
   const [status, setStatus] = useState<"idle" | "pending" | "error">("idle");
-
   return (
     <ButtonBase
       className={status}

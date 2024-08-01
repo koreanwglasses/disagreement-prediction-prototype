@@ -53,13 +53,9 @@ export type Entry = EntryModel & {
   state?: EntryState;
 };
 
-/** TODO: Get context_id and user_id from session */
-const DEFAULT_CONTEXT_ID = "XXXXX";
-const DEFAULT_USER_ID ="YYYYY";
-
 /// Methods for fetching/updating data (Public)
 export const fetchEntries = async ({
-  context_id = DEFAULT_CONTEXT_ID,
+  context_id,
   limit = 20,
 }: {
   context_id?: string;
@@ -107,7 +103,7 @@ export const fetchEntries = async ({
 export const updatePanelState = async ({
   entry_id,
   is_active,
-  context_id = DEFAULT_CONTEXT_ID
+  context_id
 }: {
   entry_id: string;
   context_id?: string;
@@ -117,13 +113,13 @@ export const updatePanelState = async ({
   const collection = await getEntryStatesCollection();
   const currentState = await collection.findOne(key);
   let set_vals = {};
-  if (currentState?.mod_decision != undefined) {
+  if (currentState?.mod_decision) {
     if (is_active) {
       //Are you sure? Re-opening closed case
       set_vals = { "panel.is_active": is_active, mod_decision: null };
     } else {
       // Voids all votes, are you sure?
-      set_vals = { "panel.is_active": is_active, "panel.votes": [] };
+      set_vals = { "panel.is_active": is_active, "panel.votes": [], mod_decision: null};
     }
   } else {
     if (is_active) {
@@ -132,7 +128,7 @@ export const updatePanelState = async ({
     } else {
       // Are there votes from other people? hit em with the "are you sre"?
       // else just cancel panel and void all votes
-      set_vals = { "panel.is_active": is_active, "panel.votes": [] };
+      set_vals = { "panel.is_active": is_active, "panel.votes": [], mod_decision: null };
     }
   }
 
@@ -144,8 +140,8 @@ export const updatePanelState = async ({
 
 export const wipeVote  = async({
   entry_id,
-  user_id = DEFAULT_USER_ID,
-  context_id = DEFAULT_CONTEXT_ID,
+  user_id,
+  context_id,
 }: {
   entry_id: string;
   context_id: string;
@@ -158,8 +154,9 @@ export const wipeVote  = async({
   if (!currentState?.panel?.is_active) { 
     set = {"mod_decision": null, "panel.votes": []}
   } else {
-    let new_votes = currentState.panel.votes.filter((elem) => elem.user)
-    let new_decision= computeDecisionFromVotes(new_votes)
+    let new_votes = currentState.panel.votes.filter((elem) => (elem.user_id != user_id))
+    let new_vote_decisions = new_votes.map((elem) =>elem.decision)
+    let new_decision= computeDecisionFromVotes(new_vote_decisions)
     set = {"mod_decision": new_decision, "panel.votes": new_votes}
   }
 
@@ -175,8 +172,8 @@ export const wipeVote  = async({
 export const submitDecision = async ({
   entry_id,
   decision,
-  user_id = DEFAULT_USER_ID,
-  context_id = DEFAULT_CONTEXT_ID,
+  user_id,
+  context_id,
 }: {
   entry_id: string;
   context_id?: string;
@@ -191,9 +188,11 @@ export const submitDecision = async ({
   if (currentState?.panel?.is_active) {
     //If there's a panel, determine what the updated outcome should be
     if (currentState?.panel?.votes) {
-      const updated_vote_vals = currentState.panel.votes.map((elem) =>
-        elem.user_id == user_id ? decision : elem.decision
-      );
+      let updated_vote_vals = currentState.panel.votes.map((elem) =>
+          elem.user_id === user_id ? decision : elem.decision);
+      if (! _.some(currentState?.panel?.votes, (elem) => elem.user_id === user_id)) {
+         updated_vote_vals.push(decision)
+      }
       updated_decision = computeDecisionFromVotes(updated_vote_vals);
     } else {
       updated_decision = null;

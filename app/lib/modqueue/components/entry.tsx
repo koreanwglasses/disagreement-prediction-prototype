@@ -22,10 +22,19 @@ import {
 } from "@mdi/js";
 import _ from "lodash";
 import { ActionButton } from "@/lib/components/action-button";
-import { useAppDispatch } from "../reducers";
+import { ModalState } from "@/lib/components/confirmation-modal";
+import { useAppDispatch, useAppSelector } from "../reducers";
 import * as Reducers from "../reducers";
 
-export const EntryRenderer = ({ entry }: { entry: Entry }) => {
+export const EntryRenderer = ({
+  entry,
+  setModalState,
+  setModalAction
+}: {
+  entry: Entry,
+  setModalState: (modalState: ModalState) => void,
+  setModalAction: (modalAction: () => void) => void
+}) => {
   return (
     <Box
       sx={{
@@ -44,7 +53,11 @@ export const EntryRenderer = ({ entry }: { entry: Entry }) => {
         <BodyRenderer entry={entry} />
         <ReportsRenderer entry={entry} />
         <PredictionsRenderer entry={entry} />
-        <ActionsRenderer entry={entry} />
+        <ActionsRenderer
+          entry={entry}
+	  setModalState={setModalState}
+	  setModalAction={setModalAction}
+	/>
       </Box>
     </Box>
   );
@@ -52,7 +65,6 @@ export const EntryRenderer = ({ entry }: { entry: Entry }) => {
 
 const HeaderRenderer = ({ entry }: { entry: Entry }) => {
   const finalDecision = entry.state?.mod_decision;
-
   const subreddit = "r/changemyview";
   const decisionMarkerStyle = {
     backgroundColor: finalDecision == "approve" ? "#7474fc": "#ff6161",
@@ -160,7 +172,7 @@ const PredictionsRenderer = ({ entry }: { entry: Entry }) => {
         }}
       >
           <AccordionSummary
-	    expandIcon={<Icon path={mdiChevronDown} size={1}/>}
+	    expandIcon={<Icon path={mdiChevronDown} size={1} aria-controls={"panel-prediction-content-" + entry.id} />}
 	    sx={{borderRadius: "4px"}}>  
               <Icon
                 path={mdiAccountGroup}
@@ -283,27 +295,73 @@ const PredictionScoresVisualization = ({
   );
 };
 
-const ActionsRenderer = ({ entry }: { entry: Entry }) => {
+const ActionsRenderer = ({
+  entry,
+  setModalState,
+  setModalAction
+}: {
+  entry: Entry,
+  setModalState: (modalState: ModalState) => void,
+  setModalAction: (modalAction: () => void) => void
+}) => {
   const dispatch = useAppDispatch();
-  const togglePanelStatus = () =>
+  const user_id = useAppSelector((state) => state.modqueue.user_id)
+  const context_id = useAppSelector((state) => state.modqueue.context_id)
+
+  const togglePanelStatus = () => {
     dispatch(
       Reducers.updatePanelState({
         entry_id: entry.id,
         is_active: !entry.state?.panel?.is_active,
+	user_id: user_id,
+	context_id: context_id
       })
     ).unwrap();
+  }
 
   const submitDecision = (decision: "approve" | "remove") =>
     dispatch(
-      Reducers.submitDecision({ entry_id: entry.id, decision })
+      Reducers.submitDecision({
+        entry_id: entry.id,
+       	decision: decision,
+       	context_id: context_id,
+        user_id: user_id
+      })
     ).unwrap();
 
   const wipeVote = async() => {
-    dispatch(Reducers.wipeVote({entry_id: entry.id}));
+    dispatch(
+      Reducers.wipeVote({
+        entry_id: entry.id,
+        user_id: user_id,
+	context_id: context_id
+      })
+    ).unwrap();
+  }
+  const undoAction = async() => {
+    dispatch(
+      Reducers.undoAction({
+        entry_id: entry.id,
+        user_id: user_id,
+	context_id: context_id
+      })
+    ).unwrap();
+  }
+  const userInVote = ( entry?.state?.panel?.votes &&
+		       (entry.state.panel.votes.some( (elem) => elem.user_id === user_id))
+		     )
+  const othersInVote = ( entry?.state?.panel?.votes &&
+			 entry.state.panel.votes.some( (elem) => elem.user_id !== user_id  )
+                       )
+  const curDecision = entry?.state?.mod_decision
+
+  const openModal = (newModalContent, newModalAction) => {
+    return () => {
+      setModalState(newModalContent)
+      setModalAction(() => newModalAction)
+    }
   }
 
-  const curDecision = entry?.state?.mod_decision
-  //To-do: If there's a resolved case thats in panel mode, that the current user voted on, there should be a "change vote" button instead of an undo action button
   return (
     <Box display="flex" gap={1.5}>
       { !curDecision ? 
@@ -321,19 +379,23 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
             onClick={() => submitDecision("remove")}
           />
         </> :
-        <ActionButton
-          icon={<Icon path={mdiArrowULeftTop} size={0.7} />}
-	  label={"Undo " + curDecision[0].toUpperCase() + curDecision.slice(1,-1) + "al"}
-  	  variant="outlined"
-	  onClick={wipeVote}
-        />
+        (userInVote || !entry?.state?.panel?.is_active) ? 
+          <ActionButton
+            icon={<Icon path={mdiArrowULeftTop} size={0.7} />}
+  	    label={entry?.state?.panel?.is_active ? "Withdraw Vote" : 
+		    "Undo " + curDecision[0].toUpperCase() + curDecision.slice(1,-1) + "al"}
+  	    variant="outlined"
+	    onClick={(othersInVote && !entry?.state?.panel?.is_active) ? openModal(ModalContent(entry, "wipe"), wipeVote) : wipeVote}
+          /> : <></>
       }
       <ActionButton
         icon={<Icon path={mdiAccountGroupOutline} size={0.7} />}
         label={entry?.state?.panel?.is_active ? "Cancel Panel" : (curDecision ? "Re-open as Panel"  : "Panel")}
         variant="outlined"
-        onClick={togglePanelStatus}
-        optimistic
+        onClick={(othersInVote && entry?.state?.panel?.is_active) ?
+	           openModal(ModalContent(entry, "cancel"), togglePanelStatus) : 
+		   togglePanelStatus
+	}
       />
       {entry.state?.panel?.is_active && (
         <Box display="flex" alignItems="center">
@@ -359,3 +421,19 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
     </Box>
   );
 };
+
+const ModalContent = (entry, action) => {
+  let returnObj = {open: true, actionDesc: "", body: ""}
+    if (action == "cancel") {
+      returnObj.actionDesc = "cancel panel";
+      returnObj.body = "Cancelling this panel will erase all existing votes, including those made by other moderators. The case will be moved back into the \"Needs Review\" queue."
+      if (entry?.state?.mod_decision == "remove") { 
+          returnObj.body = returnObj.body.slice(0, -1) + ", and the comment will become visible to users again."
+      }
+    } else if (action == "wipe") {
+      console.log("hit else case")
+      returnObj.actionDesc = (entry?.mod_decision === "approve" ? "undo approval": "undo removal")
+      returnObj.body = "This action was taken by another moderator. Consider starting a panel instead if you disagree with their decision"      
+    }
+  return returnObj
+}

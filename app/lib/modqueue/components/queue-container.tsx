@@ -2,6 +2,7 @@
 
 import { EntryRenderer } from "@/lib/modqueue/components/entry";
 import { ToolbarRenderer } from "@/lib/modqueue/components/toolbar";
+import { ModalState, ConfirmationModal } from "@/lib/components/confirmation-modal";
 import { Box, CircularProgress } from "@mui/material";
 import { useEffect, useState } from "react";
 import { fetchEntries, useAppDispatch, useAppSelector } from "../reducers";
@@ -10,9 +11,9 @@ import { useAsync } from "react-use";
 
 export const QueueContainer = () => {
   const dispatch = useAppDispatch();
-
+  const context_id = useAppSelector((state) => state.modqueue.context_id)
   // Fetch entries and get status
-  const status = useAsync(() => dispatch(fetchEntries({})).unwrap(), []);
+  const status = useAsync(() => dispatch(fetchEntries({context_id: context_id})).unwrap(), []);
 
   // Get list of entries from global state
   const entries = useAppSelector((state) => state.modqueue.entries);
@@ -21,36 +22,55 @@ export const QueueContainer = () => {
   const panelModes = ["All Cases", "Panel Cases Only", "Non-Panel Cases Only"];
   const [completionMode, setCompletionMode] = useState(completionModes[0]);
   const [panelMode, setPanelMode] = useState(panelModes[0]);
-
+  const init_modalState = {
+    open: false,
+    actionDesc: "",
+    body: "",
+  };
+  //TO-DO: Avoid prop-drilling for modal updating
+  const [modalState, setModalState] = useState(init_modalState);
+  const [modalAction, setModalAction] = useState( () => {() => null});
+  
   return (
-    <Box style={{ width: "100%", maxWidth: "1000px" }}>
-      <ToolbarRenderer
-        completionModes={completionModes}
-        completionMode={completionMode}
-        setCompletionMode={setCompletionMode}
-        panelModes={panelModes}
-        panelMode={panelMode}
-        setPanelMode={setPanelMode}
-      />
-      <Box>
-        {entries
-          .filter(
-            (entry) =>
-              (completionMode === "Needs Review") ===
-                _.isNil(entry.state?.mod_decision) &&
-              (panelMode === "All Cases" ||
-                (panelMode === "Panel Cases Only") ===
-                  !!entry.state?.panel?.is_active)
-          )
-          .map((entry) => (
-            <EntryRenderer entry={entry} key={entry.id} />
-          ))}
-      </Box>
-      {status.loading && (
-        <Box width="100%" textAlign="center" mt={1}>
-          <CircularProgress />
+    <>
+      <Box style={{ width: "100%", maxWidth: "1000px" }}>
+        <ToolbarRenderer
+          completionModes={completionModes}
+          completionMode={completionMode}
+          setCompletionMode={setCompletionMode}
+          panelModes={panelModes}
+          panelMode={panelMode}
+          setPanelMode={setPanelMode}
+        />
+        <Box>
+          {entries
+            .filter(
+              (entry) =>
+                (completionMode === "Needs Review") ===
+                  _.isNil(entry.state?.mod_decision) &&
+                (panelMode === "All Cases" ||
+                  (panelMode === "Panel Cases Only") ===
+                    !!entry.state?.panel?.is_active)
+            )
+            .map((entry) => (
+              <EntryRenderer
+	        entry={entry}
+  	        key={entry.id}
+     	        setModalState={setModalState}
+	        setModalAction={setModalAction}/>
+            ))}
         </Box>
-      )}
-    </Box>
+        {status.loading && (
+          <Box width="100%" textAlign="center" mt={1}>
+            <CircularProgress />
+          </Box>
+        )}
+      </Box>
+      <ConfirmationModal 
+        modalState={modalState}
+        setModalState={setModalState}
+        actionFunction={modalAction}
+      />
+    </>
   );
 };
