@@ -69,12 +69,14 @@ const HeaderRenderer = ({ entry }: { entry: Entry }) => {
   const decisionMarkerStyle = {
     backgroundColor: finalDecision == "approve" ? "#7474fc": "#ff6161",
     color: "white",
-    textAlign: "center",
-    marginLeft: "auto",
-    px: 3,
-    py: 1,
-    fontSize: "16px",
+    borderRadius: 1,
+    paddingLeft: 0.5,
+    paddingRight: 1,
     fontWeight: "bold",
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 0.25
   };
   return (
     <Box
@@ -95,6 +97,7 @@ const HeaderRenderer = ({ entry }: { entry: Entry }) => {
       )}
       {finalDecision ? (
         <Box sx={decisionMarkerStyle}>
+          <Icon path={finalDecision == "remove" ? mdiClose : mdiCheck} size={0.5} />
           {finalDecision.charAt(0).toUpperCase() + finalDecision.slice(1) + "d"}
         </Box>
       ) : null}
