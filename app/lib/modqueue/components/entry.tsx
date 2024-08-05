@@ -14,8 +14,6 @@ import {
   mdiCheck,
   mdiClose,
   mdiAccountGroupOutline,
-  mdiAccount,
-  mdiAccountOutline,
   mdiAccountGroup,
   mdiArrowULeftTop,
   mdiChevronDown
@@ -406,15 +404,19 @@ const ActionsRenderer = ({
             const decision = entry.state?.panel?.votes?.[i]?.decision;
             return (
               <Icon
-                path={decision ? mdiAccount : mdiAccountOutline}
-                size={1.2}
+	        size={1.6}
                 key={i}
                 color={
                   decision === "approve"
                     ? "#7474fc"
-                    : decision === "remove"
-                    ? "#ff6161"
-                    : "#888"
+                    : decision ? "#ff6161"
+	            : "#888"
+                }
+                path={
+                  decision === "approve"
+                    ? approvePath
+                    : decision ? removePath
+	            : outlinePath
                 }
               />
             );
@@ -424,6 +426,11 @@ const ActionsRenderer = ({
     </Box>
   );
 };
+
+//To-DO: Icons render with extra white space around them -- is there a way to remove?
+const outlinePath = "M13 11c2.673 0 4.011-3.231 2.121-5.121C13.231 3.989 10 5.327 10 8a3 3 0 003 3m0-4c.891 0 1.337 1.077.707 1.707C13.077 9.337 12 8.891 12 8a1 1 0 011-1m0 6c-6 0-6 4-6 4v2h12v-2s0-4-6-4m-4 4c0-.29.32-2 4-2 3.5 0 3.94 1.56 4 2"
+const approvePath = "M19 17v2H7v-2s0-4 6-4 6 4 6 4m-3-9c0-2.673-3.231-4.011-5.121-2.121C8.989 7.769 10.327 11 13 11a3 3 0 003-3m-8.66.92l1.16 1.41-4.75 4.75-2.75-3 1.16-1.16 1.59 1.58 3.59-3.58"
+const removePath = "M13 5c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3m6 12v2H7v-2c0-2.21 2.69-4 6-4s6 1.79 6 4M.464 13.12L2.59 11 .464 8.88 1.88 7.46 4 9.59l2.12-2.13 1.42 1.42L5.41 11l2.13 2.12-1.42 1.42L4 12.41l-2.12 2.13z"
 
 const ModalContent = (entry, action) => {
   let returnObj = {open: true, actionDesc: "", body: ""}
