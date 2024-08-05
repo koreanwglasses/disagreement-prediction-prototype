@@ -339,15 +339,6 @@ const ActionsRenderer = ({
       })
     ).unwrap();
   }
-  const undoAction = async() => {
-    dispatch(
-      Reducers.undoAction({
-        entry_id: entry.id,
-        user_id: user_id,
-	context_id: context_id
-      })
-    ).unwrap();
-  }
   const userInVote = ( entry?.state?.panel?.votes &&
 		       (entry.state.panel.votes.some( (elem) => elem.user_id === user_id))
 		     )
