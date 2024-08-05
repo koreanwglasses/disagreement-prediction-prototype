@@ -16,12 +16,16 @@ interface EntryModel {
   text: string;
   title: string;
   post_body: string;
+  parent_body?: string;
+  parent_is_op?: number;
   time_delay: number;
   flair: string | null;
+  is_reply?: number;
   reports?: {
     [rule: string]: number;
   };
   is_op?: boolean;
+
   panel_predictions?: { approve: number; remove: number; unsure: number };
 }
 
