@@ -3,7 +3,6 @@
 import { ContextViewer } from "@/lib/modqueue/components/context-viewer";
 import { EntryRenderer } from "@/lib/modqueue/components/entry";
 import { ToolbarRenderer } from "@/lib/modqueue/components/toolbar";
-import { ConfirmationModal } from "@/lib/components/confirmation-modal";
 import { Box, CircularProgress } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../reducers";
@@ -11,6 +10,7 @@ import { fetchEntries } from "../slices/modqueue";
 import _ from "lodash";
 import { useAsync } from "react-use";
 import type { Entry } from "../model";
+import { ConfirmationModal } from "./confirmation-modal";
 
 export const QueueContainer = () => {
   const dispatch = useAppDispatch();
