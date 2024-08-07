@@ -11,6 +11,7 @@ import _ from "lodash";
 import { useAsync } from "react-use";
 import type { Entry } from "../model";
 import { ConfirmationModal } from "./confirmation-modal";
+import { Flex, FlexCol } from "@/lib/components/styled";
 
 export const QueueContainer = () => {
   const dispatch = useAppDispatch();
@@ -30,55 +31,54 @@ export const QueueContainer = () => {
 
   return (
     <>
-      <Box
-        style={{
-          display: "flex",
-          overflow: "auto",
-          alignItems: "flex-start",
-        }}
-      >
-        <Box
+      <Flex>
+        <FlexCol
           style={{
-            width: "66%",
+            width: "66vw",
             maxWidth: "1000px",
             borderRight: 1,
             borderStyle: "solid",
             borderColor: "rgba(0,0,0,0.25)",
             paddingRight: "5px",
+
+            height: "100vh",
           }}
         >
           <ToolbarRenderer />
-          <Box>
-            {entries
-              .filter(
-                (entry) =>
-                  (completionMode === "Needs Review") ===
-                    _.isNil(entry.state?.mod_decision) &&
-                  (panelMode === "All Cases" ||
-                    (panelMode === "Panel Cases Only") ===
-                      !!entry.state?.panel?.is_active),
-              )
-              .map((entry) => (
-                <EntryRenderer entry={entry} key={entry.id} />
-              ))}
-          </Box>
-          {status.loading && (
-            <Box width="100%" textAlign="center" mt={1}>
-              <CircularProgress />
+          <Box sx={{ overflowY: "auto" }}>
+            <Box>
+              {entries
+                .filter(
+                  (entry) =>
+                    (completionMode === "Needs Review") ===
+                      _.isNil(entry.state?.mod_decision) &&
+                    (panelMode === "All Cases" ||
+                      (panelMode === "Panel Cases Only") ===
+                        !!entry.state?.panel?.is_active),
+                )
+                .map((entry) => (
+                  <EntryRenderer entry={entry} key={entry.id} />
+                ))}
             </Box>
-          )}
-        </Box>
+            {status.loading && (
+              <Box width="100%" textAlign="center" mt={1}>
+                <CircularProgress />
+              </Box>
+            )}
+          </Box>
+        </FlexCol>
         <Box
           sx={{
-            width: "33%",
+            width: "33vw",
             maxWidth: "800px",
             padding: 5,
-            position: "sticky",
+            height: "100vh",
+            overflowY: "auto",
           }}
         >
           <ContextViewer />
         </Box>
-      </Box>
+      </Flex>
       <ConfirmationModal />
     </>
   );

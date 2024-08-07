@@ -278,19 +278,31 @@ const computeDecisionFromVotes = (votes: Decision[]) => {
 /// Methods for mocking data
 
 const fillMockData = (entries: Entry[]) => {
-  return entries.map((entry) => ({
-    ...entry,
-    author_name: generateAuthorName(entry),
-    panel_predictions: generatePanelPrediction(entry),
-  }));
+  return entries.map((entry) => {
+    const author_name = generateAuthorName(entry);
+    const post_author_name = entry.is_op
+      ? author_name
+      : generateAuthorName(entry, 1);
+    const parent_author_name = entry.parent_is_op
+      ? post_author_name
+      : generateAuthorName(entry, 2);
+
+    return {
+      author_name,
+      post_author_name,
+      parent_author_name,
+      panel_predictions: generatePanelPrediction(entry),
+      ...entry,
+    } as Entry;
+  });
 };
 
 const hashEntry = (entry: Entry) =>
   // Use hashes to generate stable "random" data
   hash(entry.text) ^ hash(entry.title) ^ hash(entry.post_body);
 
-const generateAuthorName = (entry: Entry) => {
-  const seed = hashEntry(entry);
+const generateAuthorName = (entry: Entry, offset = 0) => {
+  const seed = hashEntry(entry) + offset;
   return uniqueNamesGenerator({ dictionaries: [adjectives, colors], seed });
 };
 
