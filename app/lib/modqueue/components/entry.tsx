@@ -27,14 +27,17 @@ import * as Reducers from "../reducers";
 export const EntryRenderer = ({
   entry,
   setModalState,
-  setModalAction
+  setModalAction,
+  setContextEntry
 }: {
   entry: Entry,
   setModalState: (modalState: ModalState) => void,
-  setModalAction: (modalAction: () => void) => void
+  setModalAction: (modalAction: () => void) => void,
+  setContextEntry: (contextEntry: Entry | null ) => void
 }) => {
   return (
     <Box
+      onClick={() => setContextEntry(entry)} 
       sx={{
         p: 1,
         m: 1,
@@ -45,7 +48,7 @@ export const EntryRenderer = ({
         gap: 1,
       }}
     >
-      <Box width="48px" flexShrink={0} />
+      <Box width="48px" flexShrink={0}/>
       <Box display="flex" flexDirection="column" gap={1} flexGrow={1}>
         <HeaderRenderer entry={entry} />
         <BodyRenderer entry={entry} />
