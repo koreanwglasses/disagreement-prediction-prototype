@@ -9,7 +9,8 @@ import {
 } from "@/lib/components/confirmation-modal";
 import { Box, CircularProgress } from "@mui/material";
 import { useEffect, useState } from "react";
-import { fetchEntries, useAppDispatch, useAppSelector } from "../reducers";
+import { useAppDispatch, useAppSelector } from "../reducers";
+import { fetchEntries } from "../slices/modqueue";
 import _ from "lodash";
 import { useAsync } from "react-use";
 import type { Entry } from "../model";

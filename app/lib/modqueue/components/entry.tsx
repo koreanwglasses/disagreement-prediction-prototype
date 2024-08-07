@@ -23,6 +23,7 @@ import { ActionButton } from "@/lib/components/action-button";
 import { ModalState } from "@/lib/components/confirmation-modal";
 import { useAppDispatch, useAppSelector } from "../reducers";
 import * as Reducers from "../reducers";
+import * as modqueueSlice from "../slices/modqueue";
 
 export const EntryRenderer = ({
   entry,
@@ -326,7 +327,7 @@ const ActionsRenderer = ({
 
   const togglePanelStatus = () => {
     dispatch(
-      Reducers.updatePanelState({
+      modqueueSlice.updatePanelState({
         entry_id: entry.id,
         is_active: !entry.state?.panel?.is_active,
         context_id,
@@ -336,7 +337,7 @@ const ActionsRenderer = ({
 
   const submitDecision = (decision: "approve" | "remove") =>
     dispatch(
-      Reducers.submitDecision({
+      modqueueSlice.submitDecision({
         entry_id: entry.id,
         decision: decision,
         context_id: context_id,
@@ -346,7 +347,7 @@ const ActionsRenderer = ({
 
   const wipeVote = async () => {
     dispatch(
-      Reducers.wipeVote({
+      modqueueSlice.wipeVote({
         entry_id: entry.id,
         user_id: user_id,
         context_id: context_id,
