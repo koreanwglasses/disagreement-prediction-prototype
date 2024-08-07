@@ -4,22 +4,20 @@ import { Box } from "@mui/material";
 import _ from "lodash";
 import { QueueTabs } from "@/lib/components/queue-tab";
 import { QueueDropdown } from "@/lib/components/queue-dropdown";
-
-export const ToolbarRenderer = ({
+import { useAppDispatch, useAppSelector } from "../reducers";
+import {
   completionModes,
-  completionMode,
-  setCompletionMode,
   panelModes,
-  panelMode,
+  setCompletionMode,
   setPanelMode,
-}: {
-  completionModes: string[];
-  completionMode: string;
-  setCompletionMode: (mode: string) => void;
-  panelModes: string[];
-  panelMode: string;
-  setPanelMode: (mode: string) => void;
-}) => {
+} from "../slices/queue-container";
+
+export const ToolbarRenderer = () => {
+  const dispatch = useAppDispatch();
+  const { completionMode, panelMode } = useAppSelector(
+    (state) => state.queueContainer,
+  );
+
   return (
     <Box display="flex" flexDirection="column">
       <Box sx={{ fontSize: 30, fontWeight: "semi-bold" }}>Mod Queue</Box>
@@ -27,12 +25,12 @@ export const ToolbarRenderer = ({
         <QueueTabs
           modes={completionModes}
           activeMode={completionMode}
-          setActiveMode={setCompletionMode}
+          setActiveMode={(mode) => dispatch(setCompletionMode(mode))}
         />
         <QueueDropdown
           modes={panelModes}
           activeMode={panelMode}
-          setActiveMode={setPanelMode}
+          setActiveMode={(mode) => dispatch(setPanelMode(mode))}
         />
       </Box>
     </Box>

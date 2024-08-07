@@ -4,25 +4,12 @@ import { Modal, Box } from "@mui/material/";
 import Icon from "@mdi/react";
 import {} from "@mdi/js";
 import { ActionButton } from "@/lib/components/action-button";
+import { ModalState, closeModal } from "../modqueue/slices/modal";
+import { useAppDispatch, useAppSelector } from "../modqueue/reducers";
 
-export interface ModalState {
-  open: boolean;
-  actionDesc: string;
-  body: string;
-}
-
-export const ConfirmationModal = ({
-  modalState,
-  setModalState,
-  actionFunction,
-}: {
-  modalState: ModalState;
-  setModalState: (modalState: ModalState) => void;
-  actionFunction: () => void;
-}) => {
-  const closeModal = () => {
-    setModalState({ ...modalState, open: false });
-  };
+export const ConfirmationModal = () => {
+  const dispatch = useAppDispatch();
+  const modalState = useAppSelector((state) => state.modal);
   return (
     <Modal open={modalState.open} aria-labelledby="action-confirmation-modal">
       <div>
@@ -45,7 +32,7 @@ export const ConfirmationModal = ({
           <Box
             sx={{ fontWeight: "bold", fontSize: "20px", marginBottom: "10px" }}
           >
-            {"Are you sure you want to " + modalState.actionDesc + "?"}
+            {`Are you sure you want to ${modalState.actionDesc}?`}
           </Box>
           <Box>{modalState.body}</Box>
           <Box
@@ -61,15 +48,15 @@ export const ConfirmationModal = ({
               label={"Yes, " + modalState.actionDesc}
               variant="filled"
               onClick={() => {
-                actionFunction();
-                closeModal();
+                modalState.actionFunction();
+                dispatch(closeModal());
               }}
             />
             <ActionButton
               icon={null}
               label={"No, Cancel"}
               variant="outlined"
-              onClick={closeModal}
+              onClick={() => dispatch(closeModal())}
             />
           </Box>
         </Box>

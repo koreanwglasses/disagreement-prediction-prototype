@@ -3,12 +3,18 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { useDispatch, useSelector } from "react-redux";
 import { modqueueSlice } from "./slices/modqueue";
+import { contextViewerSlice } from "./slices/context-viewer";
+import { modalSlice } from "./slices/modal";
+import { queueContainerSlice } from "./slices/queue-container";
 
 ///// Configure Store and Hooks
 
 export const store = configureStore({
   reducer: {
     modqueue: modqueueSlice.reducer,
+    contextViewer: contextViewerSlice.reducer,
+    modal: modalSlice.reducer,
+    queueContainer: queueContainerSlice.reducer,
   },
 });
 

@@ -4,48 +4,40 @@ import { Box } from "@mui/material";
 import { Icon } from "@mdi/react";
 import { ButtonBase } from "@mui/material";
 import { mdiClose } from "@mdi/js";
-import { Entry } from "../model";
+import { useAppDispatch, useAppSelector } from "../reducers";
+import { setContextViewerEntry } from "../slices/context-viewer";
 
-//TO-DO: better CSS
-export const ContextViewer = ({
-  entry,
-  setContextEntry,
-}: {
-  entry: Entry | null;
-  setContextEntry: (entry: Entry | null) => void;
-}) => {
-  return entry !== null ? (
-    <Box style={{ display: "flex", flexDirection: "column" }}>
-      <ButtonBase onClick={() => setContextEntry(null)}>
-        <Icon path={mdiClose} size={1.5} color={"rgba(0,0,0,0.25)"} />
-      </ButtonBase>
-      <Post
-        title={entry.title}
-        body={entry.post_body}
-        author_name={entry.post_author_name}
-      />
-      {entry.parent_body ? (
-        <Comment
-          text={entry.parent_body}
-          author={entry.parent_author_name}
-          is_op={entry.parent_is_op}
+export const ContextViewer = () => {
+  const dispatch = useAppDispatch();
+  const entry = useAppSelector((state) => state.contextViewer.entry);
+
+  return (
+    entry && (
+      <Box style={{ display: "flex", flexDirection: "column" }}>
+        <ButtonBase onClick={() => dispatch(setContextViewerEntry(null))}>
+          <Icon path={mdiClose} size={1.5} color={"rgba(0,0,0,0.25)"} />
+        </ButtonBase>
+        <Post
+          title={entry.title}
+          body={entry.post_body}
+          author_name={entry.post_author_name}
         />
-      ) : (
-        <></>
-      )}
-      <Comment
-        text={entry.text}
-        author={entry.author_name}
-        is_op={entry.is_op}
-      />
-    </Box>
-  ) : (
-    <></>
+        {entry.parent_body && (
+          <Comment
+            text={entry.parent_body}
+            author={entry.parent_author_name}
+            is_op={entry.parent_is_op}
+          />
+        )}
+        <Comment
+          text={entry.text}
+          author={entry.author_name}
+          is_op={entry.is_op}
+        />
+      </Box>
+    )
   );
 };
-/* <Box>
-      </Box> 
-    : <></> */
 
 const Post = ({
   title,

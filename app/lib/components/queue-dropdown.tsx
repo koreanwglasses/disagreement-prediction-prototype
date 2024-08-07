@@ -10,14 +10,14 @@ import {
 import Icon from "@mdi/react";
 import { mdiChevronDown } from "@mdi/js";
 
-export const QueueDropdown = ({
+export const QueueDropdown = <M extends readonly string[]>({
   modes,
   activeMode,
   setActiveMode,
 }: {
-  modes: string[];
-  activeMode: string;
-  setActiveMode: (mode: string) => void;
+  modes: M;
+  activeMode: M[number];
+  setActiveMode: (mode: M[number]) => void;
 }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);

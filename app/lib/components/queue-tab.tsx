@@ -7,14 +7,14 @@ import {
   ButtonBaseProps,
 } from "@mui/material";
 
-export const QueueTabs = ({
+export const QueueTabs = <M extends readonly string[]>({
   modes,
   activeMode,
   setActiveMode,
 }: {
-  modes: string[];
-  activeMode: string;
-  setActiveMode: (mode: string) => void;
+  modes: M;
+  activeMode: M[number];
+  setActiveMode: (mode: M[number]) => void;
 } & ToggleButtonGroupProps) => {
   return (
     <ToggleButtonGroup

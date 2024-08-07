@@ -20,25 +20,17 @@ import {
 } from "@mdi/js";
 import _ from "lodash";
 import { ActionButton } from "@/lib/components/action-button";
-import { ModalState } from "@/lib/components/confirmation-modal";
 import { useAppDispatch, useAppSelector } from "../reducers";
-import * as Reducers from "../reducers";
 import * as modqueueSlice from "../slices/modqueue";
+import * as modalSlice from "../slices/modal";
+import { setContextViewerEntry } from "../slices/context-viewer";
+import { ModalState } from "../slices/modal";
 
-export const EntryRenderer = ({
-  entry,
-  setModalState,
-  setModalAction,
-  setContextEntry,
-}: {
-  entry: Entry;
-  setModalState: (modalState: ModalState) => void;
-  setModalAction: (modalAction: () => void) => void;
-  setContextEntry: (contextEntry: Entry | null) => void;
-}) => {
+export const EntryRenderer = ({ entry }: { entry: Entry }) => {
+  const dispatch = useAppDispatch();
   return (
     <Box
-      onClick={() => setContextEntry(entry)}
+      onClick={() => dispatch(setContextViewerEntry(entry))}
       sx={{
         p: 1,
         m: 1,
@@ -55,11 +47,7 @@ export const EntryRenderer = ({
         <BodyRenderer entry={entry} />
         <ReportsRenderer entry={entry} />
         <PredictionsRenderer entry={entry} />
-        <ActionsRenderer
-          entry={entry}
-          setModalState={setModalState}
-          setModalAction={setModalAction}
-        />
+        <ActionsRenderer entry={entry} />
       </Box>
     </Box>
   );
@@ -103,7 +91,7 @@ const HeaderRenderer = ({ entry }: { entry: Entry }) => {
             path={finalDecision == "remove" ? mdiClose : mdiCheck}
             size={0.5}
           />
-          {finalDecision.charAt(0).toUpperCase() + finalDecision.slice(1) + "d"}
+          {`${finalDecision.charAt(0).toUpperCase() + finalDecision.slice(1)}d`}
         </Box>
       ) : null}
     </Box>
@@ -312,20 +300,12 @@ const PredictionScoresVisualization = ({
   );
 };
 
-const ActionsRenderer = ({
-  entry,
-  setModalState,
-  setModalAction,
-}: {
-  entry: Entry;
-  setModalState: (modalState: ModalState) => void;
-  setModalAction: (modalAction: () => void) => void;
-}) => {
+const ActionsRenderer = ({ entry }: { entry: Entry }) => {
   const dispatch = useAppDispatch();
   const user_id = useAppSelector((state) => state.modqueue.user_id);
   const context_id = useAppSelector((state) => state.modqueue.context_id);
 
-  const togglePanelStatus = () => {
+  const togglePanelStatus = () =>
     dispatch(
       modqueueSlice.updatePanelState({
         entry_id: entry.id,
@@ -333,41 +313,44 @@ const ActionsRenderer = ({
         context_id,
       }),
     ).unwrap();
-  };
 
   const submitDecision = (decision: "approve" | "remove") =>
     dispatch(
       modqueueSlice.submitDecision({
         entry_id: entry.id,
-        decision: decision,
-        context_id: context_id,
-        user_id: user_id,
+        decision,
+        context_id,
+        user_id,
       }),
     ).unwrap();
 
-  const wipeVote = async () => {
+  const wipeVote = () =>
     dispatch(
       modqueueSlice.wipeVote({
         entry_id: entry.id,
-        user_id: user_id,
-        context_id: context_id,
+        user_id,
+        context_id,
       }),
     ).unwrap();
-  };
-  const userInVote =
-    entry?.state?.panel?.votes &&
-    entry.state.panel.votes.some((elem) => elem.user_id === user_id);
-  const othersInVote =
-    entry?.state?.panel?.votes &&
-    entry.state.panel.votes.some((elem) => elem.user_id !== user_id);
+
+  const userInVote = entry?.state?.panel?.votes?.some(
+    (elem) => elem.user_id === user_id,
+  );
+  const othersInVote = entry?.state?.panel?.votes?.some(
+    (elem) => elem.user_id !== user_id,
+  );
   const curDecision = entry?.state?.mod_decision;
 
-  const openModal = (newModalContent, newModalAction) => {
-    return () => {
-      setModalState(newModalContent);
-      setModalAction(() => newModalAction);
-    };
-  };
+  const openModal = (
+    newModalContent: Omit<ModalState, "actionFunction">,
+    newModalAction: ModalState["actionFunction"],
+  ) =>
+    dispatch(
+      modalSlice.openModal({
+        ...newModalContent,
+        actionFunction: newModalAction,
+      }),
+    );
 
   return (
     <Box display="flex" gap={1.5}>
@@ -398,15 +381,13 @@ const ActionsRenderer = ({
                 "al"
           }
           variant="outlined"
-          onClick={
+          onClick={() =>
             othersInVote && !entry?.state?.panel?.is_active
               ? openModal(ModalContent(entry, "wipe"), wipeVote)
-              : wipeVote
+              : wipeVote()
           }
         />
-      ) : (
-        <></>
-      )}
+      ) : null}
       <ActionButton
         icon={<Icon path={mdiAccountGroupOutline} size={0.7} />}
         label={
@@ -417,10 +398,10 @@ const ActionsRenderer = ({
               : "Panel"
         }
         variant="outlined"
-        onClick={
+        onClick={() =>
           othersInVote && entry?.state?.panel?.is_active
             ? openModal(ModalContent(entry, "cancel"), togglePanelStatus)
-            : togglePanelStatus
+            : togglePanelStatus()
         }
       />
       {entry.state?.panel?.is_active && (
@@ -462,8 +443,11 @@ const approvePath =
 const removePath =
   "M13 5c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3m6 12v2H7v-2c0-2.21 2.69-4 6-4s6 1.79 6 4M.464 13.12L2.59 11 .464 8.88 1.88 7.46 4 9.59l2.12-2.13 1.42 1.42L5.41 11l2.13 2.12-1.42 1.42L4 12.41l-2.12 2.13z";
 
-const ModalContent = (entry, action) => {
-  let returnObj = { open: true, actionDesc: "", body: "" };
+const ModalContent = (
+  entry: Entry,
+  action: string,
+): Omit<ModalState, "actionFunction"> => {
+  const returnObj = { open: true, actionDesc: "", body: "" };
   if (action == "cancel") {
     returnObj.actionDesc = "cancel panel";
     returnObj.body =
@@ -476,7 +460,9 @@ const ModalContent = (entry, action) => {
   } else if (action == "wipe") {
     console.log("hit else case");
     returnObj.actionDesc =
-      entry?.mod_decision === "approve" ? "undo approval" : "undo removal";
+      entry?.state?.mod_decision === "approve"
+        ? "undo approval"
+        : "undo removal";
     returnObj.body =
       "This action was taken by another moderator. Consider starting a panel instead if you disagree with their decision";
   }
