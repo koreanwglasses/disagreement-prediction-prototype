@@ -12,6 +12,7 @@ export const ActionButton = ({
   label,
   variant = "outlined",
   optimistic = false,
+  palette,
   onClick,
   sx = [],
   ...props
@@ -19,13 +20,14 @@ export const ActionButton = ({
   icon: React.ReactNode;
   label: React.ReactNode;
   variant?: "filled" | "outlined";
+  palette?: { main?: string; contrastText?: string };
   /** If true, will not show a loading icon while the action is pending */
   optimistic?: boolean;
 } & ButtonBaseProps) => {
   const variantStyle = {
     filled: {
-      bgcolor: "#0079d3",
-      color: "#fff",
+      bgcolor: palette?.main ?? "#0079d3",
+      color: palette?.contrastText ?? "#fff",
       "&.pending": {
         bgcolor: "#ccc",
       },

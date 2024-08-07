@@ -25,6 +25,7 @@ import * as modqueueSlice from "../slices/modqueue";
 import * as modalSlice from "../slices/modal";
 import { setContextViewerEntry } from "../slices/context-viewer";
 import { ModalState } from "../slices/modal";
+import { theme } from "../../theme";
 
 export const EntryRenderer = ({ entry }: { entry: Entry }) => {
   const dispatch = useAppDispatch();
@@ -353,19 +354,21 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
     );
 
   return (
-    <Box display="flex" gap={1.5}>
+    <Box display="flex" gap={1.5} alignItems="center">
       {!curDecision ? (
         <>
           <ActionButton
             icon={<Icon path={mdiCheck} size={0.7} />}
             label="Approve"
             variant="filled"
+            palette={theme.palette.accept}
             onClick={() => submitDecision("approve")}
           />
           <ActionButton
             icon={<Icon path={mdiClose} size={0.7} />}
             label="Remove"
-            variant="outlined"
+            variant="filled"
+            palette={theme.palette.remove}
             onClick={() => submitDecision("remove")}
           />
         </>
