@@ -12,9 +12,9 @@ import _ from "lodash";
 
 // Structures of the Entry/State objects as they are in the DB
 interface EntryModel {
-  author_name: string;
-  post_author_name: string;
-  parent_author_name: string;
+  author_name?: string;
+  post_author_name?: string;
+  parent_author_name?: string;
   text: string;
   title: string;
   post_body: string;
@@ -26,7 +26,7 @@ interface EntryModel {
   reports?: {
     [rule: string]: number;
   };
-  is_op?: boolean;
+  is_op?: number;
 
   panel_predictions?: { approve: number; remove: number; unsure: number };
 }

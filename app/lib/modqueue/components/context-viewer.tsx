@@ -54,7 +54,7 @@ const Post = ({
 }: {
   title: string;
   body: string;
-  author_name: string;
+  author_name?: string;
 }) => {
   return (
     <Box style={{ display: "flex", flexDirection: "column" }}>
@@ -73,8 +73,8 @@ const Comment = ({
   is_op,
 }: {
   text: string;
-  author: string;
-  is_op?: boolean;
+  author?: string;
+  is_op?: number | boolean;
 }) => {
   return (
     <Box style={{ display: "flex", flexDirection: "column" }}>
