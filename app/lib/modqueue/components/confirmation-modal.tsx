@@ -4,8 +4,8 @@ import { Modal, Box } from "@mui/material/";
 import Icon from "@mdi/react";
 import {} from "@mdi/js";
 import { ActionButton } from "@/lib/components/action-button";
-import { ModalState, closeModal } from "../modqueue/slices/modal";
-import { useAppDispatch, useAppSelector } from "../modqueue/reducers";
+import { ModalState, closeModal } from "../slices/modal";
+import { useAppDispatch, useAppSelector } from "../reducers";
 
 export const ConfirmationModal = () => {
   const dispatch = useAppDispatch();
