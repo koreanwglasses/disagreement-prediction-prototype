@@ -14,32 +14,31 @@ import { useDispatch, useSelector } from "react-redux";
 
 export const fetchEntries = createAsyncThunk(
   "entries/fetchEntries",
-  (args: Parameters<typeof Model.fetchEntries>[0]) => Model.fetchEntries(args)
+  (args: Parameters<typeof Model.fetchEntries>[0]) => Model.fetchEntries(args),
 );
 
 export const updatePanelState = createAsyncThunk(
   "entries/updatePanelState",
-  (args: Parameters<typeof Model.updatePanelState>[0]) => 
-    Model.updatePanelState(args)
+  (args: Parameters<typeof Model.updatePanelState>[0]) =>
+    Model.updatePanelState(args),
 );
 
 export const submitDecision = createAsyncThunk(
   "entries/submitDecision",
   (args: Parameters<typeof Model.submitDecision>[0]) =>
-    Model.submitDecision(args)
+    Model.submitDecision(args),
 );
 
 export const wipeVote = createAsyncThunk(
   "entries/wipeVote",
-  (args: Parameters<typeof Model.wipeVote>[0]) =>
-    Model.wipeVote(args)
+  (args: Parameters<typeof Model.wipeVote>[0]) => Model.wipeVote(args),
 );
 
 ///// Create slice
 const initialState = {
   entries: [] as Entry[],
   user_id: "XXXXX",
-  context_id: "YYYYY"
+  context_id: "YYYYY",
 };
 
 type State = typeof initialState;
@@ -49,7 +48,7 @@ const findIndexOfEntryById = (state: State, id?: string) =>
 
 const updateEntryStateReducer = (
   state: State,
-  action: PayloadAction<EntryState | null>
+  action: PayloadAction<EntryState | null>,
 ) => {
   if (action.payload) {
     const i = findIndexOfEntryById(state, action.payload!.entry_id);

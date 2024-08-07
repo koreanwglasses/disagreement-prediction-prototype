@@ -12,12 +12,14 @@ import _ from "lodash";
 
 // Structures of the Entry/State objects as they are in the DB
 interface EntryModel {
-  author_name?: string;
+  author_name: string;
+  post_author_name: string;
+  parent_author_name: string;
   text: string;
   title: string;
   post_body: string;
   parent_body?: string;
-  parent_is_op?: number;
+  parent_is_op?: boolean;
   time_delay: number;
   flair: string | null;
   is_reply?: number;
@@ -107,7 +109,7 @@ export const fetchEntries = async ({
 export const updatePanelState = async ({
   entry_id,
   is_active,
-  context_id
+  context_id,
 }: {
   entry_id: string;
   context_id?: string;
@@ -123,7 +125,11 @@ export const updatePanelState = async ({
       set_vals = { "panel.is_active": is_active, mod_decision: null };
     } else {
       // Voids all votes, are you sure?
-      set_vals = { "panel.is_active": is_active, "panel.votes": [], mod_decision: null};
+      set_vals = {
+        "panel.is_active": is_active,
+        "panel.votes": [],
+        mod_decision: null,
+      };
     }
   } else {
     if (is_active) {
@@ -132,17 +138,21 @@ export const updatePanelState = async ({
     } else {
       // Are there votes from other people? hit em with the "are you sre"?
       // else just cancel panel and void all votes
-      set_vals = { "panel.is_active": is_active, "panel.votes": [], mod_decision: null };
+      set_vals = {
+        "panel.is_active": is_active,
+        "panel.votes": [],
+        mod_decision: null,
+      };
     }
   }
 
   await collection.updateOne(key, { $set: set_vals }, { upsert: true });
 
   var final_val = cleanEntryState(await collection.findOne(key));
-  return final_val
+  return final_val;
 };
 
-export const wipeVote  = async({
+export const wipeVote = async ({
   entry_id,
   user_id,
   context_id,
@@ -154,24 +164,22 @@ export const wipeVote  = async({
   const key = { entry_id: ObjectId.createFromHexString(entry_id), context_id };
   const collection = await getEntryStatesCollection();
   const currentState = await collection.findOne(key);
-  var set = {}
-  if (!currentState?.panel?.is_active) { 
-    set = {"mod_decision": null, "panel.votes": []}
+  var set = {};
+  if (!currentState?.panel?.is_active) {
+    set = { mod_decision: null, "panel.votes": [] };
   } else {
-    let new_votes = currentState.panel.votes.filter((elem) => (elem.user_id != user_id))
-    let new_vote_decisions = new_votes.map((elem) =>elem.decision)
-    let new_decision= computeDecisionFromVotes(new_vote_decisions)
-    set = {"mod_decision": new_decision, "panel.votes": new_votes}
+    let new_votes = currentState.panel.votes.filter(
+      (elem) => elem.user_id != user_id,
+    );
+    let new_vote_decisions = new_votes.map((elem) => elem.decision);
+    let new_decision = computeDecisionFromVotes(new_vote_decisions);
+    set = { mod_decision: new_decision, "panel.votes": new_votes };
   }
 
-  await collection.updateOne(
-    key,
-    { $set: set },
-    { upsert: true }
-  ); 
+  await collection.updateOne(key, { $set: set }, { upsert: true });
 
-  return cleanEntryState(await collection.findOne(key))
-}
+  return cleanEntryState(await collection.findOne(key));
+};
 
 export const submitDecision = async ({
   entry_id,
@@ -193,9 +201,12 @@ export const submitDecision = async ({
     //If there's a panel, determine what the updated outcome should be
     if (currentState?.panel?.votes) {
       let updated_vote_vals = currentState.panel.votes.map((elem) =>
-          elem.user_id === user_id ? decision : elem.decision);
-      if (! _.some(currentState?.panel?.votes, (elem) => elem.user_id === user_id)) {
-         updated_vote_vals.push(decision)
+        elem.user_id === user_id ? decision : elem.decision,
+      );
+      if (
+        !_.some(currentState?.panel?.votes, (elem) => elem.user_id === user_id)
+      ) {
+        updated_vote_vals.push(decision);
       }
       updated_decision = computeDecisionFromVotes(updated_vote_vals);
     } else {
@@ -206,7 +217,7 @@ export const submitDecision = async ({
   await collection.updateOne(
     key,
     { $set: { mod_decision: updated_decision } },
-    { upsert: true }
+    { upsert: true },
   );
 
   const vote = { user_id, decision };
@@ -215,18 +226,18 @@ export const submitDecision = async ({
     await collection.updateOne(
       { ...key, "panel.votes": { $elemMatch: { user_id } } },
       { $set: { "panel.votes.$": vote } },
-      { upsert: true }
+      { upsert: true },
     );
   } else {
     // If the user hasn't already voted, push their vote
     await collection.updateOne(
       key,
       { $push: { "panel.votes": vote } },
-      { upsert: true }
+      { upsert: true },
     );
   }
   var final = cleanEntryState(await collection.findOne(key));
-  return final
+  return final;
 };
 
 /// DB access helpers
@@ -244,7 +255,7 @@ const getEntryStatesCollection = async () => {
 /// Methods for cleaning data and removing extraneous fields
 
 const cleanEntryState = (
-  entryState: EntryStateModel | null
+  entryState: EntryStateModel | null,
 ): EntryState | null =>
   entryState && {
     ..._.omit(entryState, "_id"),
