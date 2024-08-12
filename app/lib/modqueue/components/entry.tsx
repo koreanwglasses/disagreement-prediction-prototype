@@ -1,6 +1,7 @@
 "use client";
 
 import type { Entry } from "../model";
+import { useState } from "react"
 import {
   Avatar,
   Box,
@@ -162,6 +163,11 @@ const ReportsRenderer = ({ entry }: { entry: Entry }) => {
 };
 
 const PredictionsRenderer = ({ entry }: { entry: Entry }) => {
+  const [expanded, setExpanded] = useState(false);
+  const toggleAccordion = (e) => {
+    setExpanded((prev) => !prev)
+    e.stopPropagation()
+  }
   return (
     entry.panel_predictions && (
       <Accordion
@@ -170,6 +176,8 @@ const PredictionsRenderer = ({ entry }: { entry: Entry }) => {
           borderRadius: 1,
           boxShadow: "none",
         }}
+	expanded={expanded}
+	onClick={toggleAccordion}
       >
         <AccordionSummary
           expandIcon={
