@@ -339,9 +339,15 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
   const userInVote = entry?.state?.panel?.votes?.some(
     (elem) => elem.user_id === user_id,
   );
+  
   const othersInVote = entry?.state?.panel?.votes?.some(
     (elem) => elem.user_id !== user_id,
   );
+  
+  const userVote = entry?.state?.panel?.votes?.filter(
+    (elem) => elem.user_id === user_id,
+  );
+  console.log(userVote)
   const curDecision = entry?.state?.mod_decision;
 
   const openModal = (
@@ -362,14 +368,14 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
           <ActionButton
             icon={<Icon path={mdiCheck} size={0.7} />}
             label="Approve"
-            variant="filled"
+            variant={ userInVote && userVote[0].decision == "approve" ? "filled" : "outlined" } 
             palette={theme.palette.accept}
             onClick={() => submitDecision("approve")}
           />
           <ActionButton
             icon={<Icon path={mdiClose} size={0.7} />}
             label="Remove"
-            variant="filled"
+            variant={ userInVote && userVote[0].decision == "remove" ? "filled" : "outlined"}
             palette={theme.palette.remove}
             onClick={() => submitDecision("remove")}
           />
