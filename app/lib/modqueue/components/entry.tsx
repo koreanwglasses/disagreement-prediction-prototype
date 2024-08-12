@@ -461,18 +461,20 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
                   // @ts-ignore Forwards the prop to the underlying svg
                   viewBox={"0 0 20 20.5"}
                   color={
-                    decision === "approve"
+                    decision === "approve" && (userInVote || entry?.state?.mod_decision) 
                       ? theme.palette.accept.main
-                      : decision
+                      : decision && (userInVote || entry?.state?.mod_decision)
                         ? theme.palette.remove.main
                         : "#888"
                   }
                   path={
-                    decision === "approve"
+                    decision === "approve" && (userInVote || entry?.state?.mod_decision)
                       ? approvePath
-                      : decision
+                      : decision && (userInVote || entry?.state?.mod_decision)
                         ? removePath
-                        : outlinePath
+                        : decision 
+			  ? filledPath
+			  : outlinePath
                   }
                 />
                 <Box
@@ -491,6 +493,8 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
   );
 };
 
+const filledPath = 
+  "M13 5c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3m6 12v2H7v-2c0-2.21 2.69-4 6-4s6 1.79 6 4"
 const outlinePath =
   "M13 11c2.673 0 4.011-3.231 2.121-5.121C13.231 3.989 10 5.327 10 8a3 3 0 003 3m0-4c.891 0 1.337 1.077.707 1.707C13.077 9.337 12 8.891 12 8a1 1 0 011-1m0 6c-6 0-6 4-6 4v2h12v-2s0-4-6-4m-4 4c0-.29.32-2 4-2 3.5 0 3.94 1.56 4 2";
 const approvePath =
