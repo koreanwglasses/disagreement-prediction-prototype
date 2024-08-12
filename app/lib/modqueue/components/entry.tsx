@@ -355,7 +355,6 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
   const userVote = entry?.state?.panel?.votes?.filter(
     (elem) => elem.user_id === user_id,
   );
-  console.log(userVote);
   const curDecision = entry?.state?.mod_decision;
 
   const openModal = (
@@ -383,6 +382,7 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
             }
             palette={theme.palette.accept}
             onClick={() => submitDecision("approve")}
+            stopPropagation
           />
           <ActionButton
             icon={<Icon path={mdiClose} size={0.7} />}
@@ -394,6 +394,7 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
             }
             palette={theme.palette.remove}
             onClick={() => submitDecision("remove")}
+            stopPropagation
           />
         </>
       ) : userInVote || !entry?.state?.panel?.is_active ? (
@@ -413,6 +414,7 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
               ? openModal(ModalContent(entry, "wipe"), wipeVote)
               : wipeVote()
           }
+          stopPropagation
         />
       ) : null}
       <ActionButton
@@ -430,6 +432,7 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
             ? openModal(ModalContent(entry, "cancel"), togglePanelStatus)
             : togglePanelStatus()
         }
+        stopPropagation
       />
     {entry.state?.panel?.is_active && (
         <Box display="flex" alignItems="top">

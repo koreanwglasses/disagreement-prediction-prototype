@@ -14,6 +14,7 @@ export const ActionButton = ({
   optimistic = false,
   palette,
   onClick,
+  stopPropagation = false,
   sx = [],
   ...props
 }: {
@@ -21,8 +22,10 @@ export const ActionButton = ({
   label: React.ReactNode;
   variant?: "filled" | "outlined";
   palette?: { main?: string; contrastText?: string };
-  /** If true, will not show a loading icon while the action is pending */
+  /** If set, will not show a loading icon while the action is pending */
   optimistic?: boolean;
+  /** If set, will prevent onClick events from bubbling */
+  stopPropagation?: boolean;
 } & ButtonBaseProps) => {
   const variantStyle = {
     filled: {
@@ -57,6 +60,7 @@ export const ActionButton = ({
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
       onClick={async (e) => {
+        if (stopPropagation) e.stopPropagation();
         if (!optimistic) setStatus("pending");
         try {
           await onClick?.(e);
