@@ -58,7 +58,10 @@ const HeaderRenderer = ({ entry }: { entry: Entry }) => {
   const finalDecision = entry.state?.mod_decision;
   const subreddit = "r/changemyview";
   const decisionMarkerStyle = {
-    backgroundColor: finalDecision == "approve" ? theme.palette.accept.main : theme.palette.remove.main,
+    backgroundColor:
+      finalDecision == "approve"
+        ? theme.palette.accept.main
+        : theme.palette.remove.main,
     color: "white",
     borderRadius: 1,
     paddingLeft: 0.5,
@@ -199,10 +202,13 @@ const PredictionsRenderer = ({ entry }: { entry: Entry }) => {
           <strong>{(entry.panel_predictions.remove * 100).toFixed(0)}%</strong>{" "}
           support removal. We are unsure how{" "}
           <strong>{(entry.panel_predictions.unsure * 100).toFixed(0)}%</strong>{" "}
-          of moderators would act. {entry.panel_predictions.approve < .7  && entry.panel_predictions.remove < .7 ? 
-	  "Because consensus for this case is low, we recommend panel review.": ""} Note that our model
-	  does make mistakes, so these predictions should not be interpreted as a guarantee for how
-	  other moderators would act.
+          of moderators would act.{" "}
+          {entry.panel_predictions.approve < 0.7 &&
+          entry.panel_predictions.remove < 0.7
+            ? "Because consensus for this case is low, we recommend panel review."
+            : ""}{" "}
+          Note that our model does make mistakes, so these predictions should
+          not be interpreted as a guarantee for how other moderators would act.
         </AccordionDetails>
       </Accordion>
     )
@@ -339,15 +345,15 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
   const userInVote = entry?.state?.panel?.votes?.some(
     (elem) => elem.user_id === user_id,
   );
-  
+
   const othersInVote = entry?.state?.panel?.votes?.some(
     (elem) => elem.user_id !== user_id,
   );
-  
+
   const userVote = entry?.state?.panel?.votes?.filter(
     (elem) => elem.user_id === user_id,
   );
-  console.log(userVote)
+  console.log(userVote);
   const curDecision = entry?.state?.mod_decision;
 
   const openModal = (
@@ -368,14 +374,22 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
           <ActionButton
             icon={<Icon path={mdiCheck} size={0.7} />}
             label="Approve"
-            variant={ userInVote && userVote[0].decision == "approve" ? "filled" : "outlined" } 
+            variant={
+              userInVote && userVote?.[0].decision === "approve"
+                ? "filled"
+                : "outlined"
+            }
             palette={theme.palette.accept}
             onClick={() => submitDecision("approve")}
           />
           <ActionButton
             icon={<Icon path={mdiClose} size={0.7} />}
             label="Remove"
-            variant={ userInVote && userVote[0].decision == "remove" ? "filled" : "outlined"}
+            variant={
+              userInVote && userVote?.[0].decision === "remove"
+                ? "filled"
+                : "outlined"
+            }
             palette={theme.palette.remove}
             onClick={() => submitDecision("remove")}
           />
