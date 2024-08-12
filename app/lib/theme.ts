@@ -1,11 +1,11 @@
 const palette = {
   accept: {
-    main: "#58e15b",
-    contrastText: "#075f0d",
+    main: "#1ea920",
+    contrastText: "#043407",
   },
   remove: {
-    main: "#fdb2a3",
-    contrastText: "#a5222b",
+    main: "#fb6041",
+    contrastText: "#551117",
   },
 };
 

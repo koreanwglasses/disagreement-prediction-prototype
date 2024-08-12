@@ -58,7 +58,7 @@ const HeaderRenderer = ({ entry }: { entry: Entry }) => {
   const finalDecision = entry.state?.mod_decision;
   const subreddit = "r/changemyview";
   const decisionMarkerStyle = {
-    backgroundColor: finalDecision == "approve" ? "#7474fc" : "#ff6161",
+    backgroundColor: finalDecision == "approve" ? theme.palette.accept.main : theme.palette.remove.main,
     color: "white",
     borderRadius: 1,
     paddingLeft: 0.5,
@@ -231,7 +231,7 @@ const PredictionScoresVisualization = ({
         bottom={barOffsetBottom}
         width={`${s[0]}%`}
         height={barHeight}
-        bgcolor="#7474fc"
+        bgcolor={theme.palette.accept.main}
       />
       <Box
         position="absolute"
@@ -247,7 +247,7 @@ const PredictionScoresVisualization = ({
         bottom={barOffsetBottom}
         width={`${s[2]}%`}
         height={barHeight}
-        bgcolor="#ff6161"
+        bgcolor={theme.palette.remove.main}
       />
 
       {/* Ticks */}
@@ -417,9 +417,9 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
                 key={i}
                 color={
                   decision === "approve"
-                    ? "#7474fc"
+                    ? theme.palette.accept.main
                     : decision
-                      ? "#ff6161"
+                      ? theme.palette.remove.main
                       : "#888"
                 }
                 path={
