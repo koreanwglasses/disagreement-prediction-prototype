@@ -309,7 +309,6 @@ const PredictionScoresVisualization = ({
   );
 };
 
-
 //current solution for aligning panel icons with buttons is hacky, TO-DO: Find a better one
 const ActionsRenderer = ({ entry }: { entry: Entry }) => {
   const dispatch = useAppDispatch();
@@ -369,7 +368,7 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
     );
 
   return (
-    <Box display="flex" gap={1.5} alignItems="center" >
+    <Box display="flex" gap={1.5} alignItems="center">
       {!curDecision ? (
         <>
           <ActionButton
@@ -434,17 +433,25 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
         }
         stopPropagation
       />
-    {entry.state?.panel?.is_active && (
+      {entry.state?.panel?.is_active && (
         <Box display="flex" alignItems="top">
           {[0, 1, 2].map((i) => {
             const decision = entry.state?.panel?.votes?.[i]?.decision;
             const curUser = entry.state?.panel?.votes?.[i]?.user_id;
             return (
-              <Box display={"flex"} flexDirection={"column"} alignItems={"center"} gap={0} paddingTop={"13px"}>
+              <Box
+                display={"flex"}
+                flexDirection={"column"}
+                alignItems={"center"}
+                gap={0}
+                paddingTop={"13px"}
+                key={i}
+              >
                 <Icon
                   size={1.6}
                   key={i}
-		  viewBox={"0 0 20 20.5"}
+                  // @ts-ignore Forwards the prop to the underlying svg
+                  viewBox={"0 0 20 20.5"}
                   color={
                     decision === "approve"
                       ? theme.palette.accept.main
@@ -460,8 +467,14 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
                         : outlinePath
                   }
                 />
-		<Box fontSize={"13px"} marginLeft={curUser === user_id ? "9px" : "0px"} color={ curUser === user_id ? "black" : "white"}>{curUser === user_id ? "You" : "_"}</Box>
-	      </Box>
+                <Box
+                  fontSize={"13px"}
+                  marginLeft={curUser === user_id ? "9px" : "0px"}
+                  color={curUser === user_id ? "black" : "white"}
+                >
+                  {curUser === user_id ? "You" : "_"}
+                </Box>
+              </Box>
             );
           })}
         </Box>
