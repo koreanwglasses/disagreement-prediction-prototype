@@ -186,7 +186,7 @@ const PredictionsRenderer = ({ entry }: { entry: Entry }) => {
             style={{ flexShrink: 0 }}
           />
           <Box component="h3" fontWeight="bold" paddingLeft="8px">
-            Predicted Panel
+            What would other moderators do?
           </Box>
         </AccordionSummary>
         <AccordionDetails sx={{ width: "100%" }}>
@@ -199,8 +199,10 @@ const PredictionsRenderer = ({ entry }: { entry: Entry }) => {
           <strong>{(entry.panel_predictions.remove * 100).toFixed(0)}%</strong>{" "}
           support removal. We are unsure how{" "}
           <strong>{(entry.panel_predictions.unsure * 100).toFixed(0)}%</strong>{" "}
-          of moderators would act. Because consensus for this case is low, we
-          recommend panel review.
+          of moderators would act. {entry.panel_predictions.approve < .7  && entry.panel_predictions.remove < .7 ? 
+	  "Because consensus for this case is low, we recommend panel review.": ""} Note that our model
+	  does make mistakes, so these predictions should not be interpreted as a guarantee for how
+	  other moderators would act.
         </AccordionDetails>
       </Accordion>
     )
