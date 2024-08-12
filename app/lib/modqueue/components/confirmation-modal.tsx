@@ -54,7 +54,7 @@ export const ConfirmationModal = () => {
             />
             <ActionButton
               icon={null}
-              label={"No, Abort Action"}
+              label={"No, abort action"}
               variant="outlined"
               onClick={() => dispatch(closeModal())}
             />

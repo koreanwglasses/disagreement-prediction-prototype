@@ -303,6 +303,8 @@ const PredictionScoresVisualization = ({
   );
 };
 
+
+//current solution for aligning panel icons with buttons is hacky, TO-DO: Find a better one
 const ActionsRenderer = ({ entry }: { entry: Entry }) => {
   const dispatch = useAppDispatch();
   const user_id = useAppSelector((state) => state.modqueue.user_id);
@@ -362,21 +364,21 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
     );
 
   return (
-    <Box display="flex" gap={1.5} alignItems="center">
+    <Box display="flex" gap={1.5} alignItems="center" >
       {!curDecision ? (
         <>
           <ActionButton
             icon={<Icon path={mdiCheck} size={0.7} />}
             label="Approve"
-            variant={ userInVote && userVote[0].decision == "approve" ? "filled" : "outlined" } 
+            variant={ userInVote && userVote[0].decision === "approve" ? "filled" : "outlined" } 
             palette={theme.palette.accept}
             onClick={() => submitDecision("approve")}
           />
           <ActionButton
             icon={<Icon path={mdiClose} size={0.7} />}
             label="Remove"
-            variant={ userInVote && userVote[0].decision == "remove" ? "filled" : "outlined"}
-            palette={theme.palette.remove}
+            variant={ userInVote && userVote[0].decision === "remove" ? "filled" : "outlined" }
+	    palette={theme.palette.remove}
             onClick={() => submitDecision("remove")}
           />
         </>
@@ -415,29 +417,34 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
             : togglePanelStatus()
         }
       />
-      {entry.state?.panel?.is_active && (
-        <Box display="flex" alignItems="center">
+    {entry.state?.panel?.is_active && (
+        <Box display="flex" alignItems="top">
           {[0, 1, 2].map((i) => {
             const decision = entry.state?.panel?.votes?.[i]?.decision;
+            const curUser = entry.state?.panel?.votes?.[i]?.user_id;
             return (
-              <Icon
-                size={1.6}
-                key={i}
-                color={
-                  decision === "approve"
-                    ? theme.palette.accept.main
-                    : decision
-                      ? theme.palette.remove.main
-                      : "#888"
-                }
-                path={
-                  decision === "approve"
-                    ? approvePath
-                    : decision
-                      ? removePath
-                      : outlinePath
-                }
-              />
+              <Box display={"flex"} flexDirection={"column"} alignItems={"center"} gap={0} paddingTop={"13px"}>
+                <Icon
+                  size={1.6}
+                  key={i}
+		  viewBox={"0 0 20 20.5"}
+                  color={
+                    decision === "approve"
+                      ? theme.palette.accept.main
+                      : decision
+                        ? theme.palette.remove.main
+                        : "#888"
+                  }
+                  path={
+                    decision === "approve"
+                      ? approvePath
+                      : decision
+                        ? removePath
+                        : outlinePath
+                  }
+                />
+		<Box fontSize={"13px"} marginLeft={curUser === user_id ? "9px" : "0px"} color={ curUser === user_id ? "black" : "white"}>{curUser === user_id ? "You" : "_"}</Box>
+	      </Box>
             );
           })}
         </Box>
@@ -446,7 +453,6 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
   );
 };
 
-//To-DO: Icons render with extra white space around them -- is there a way to remove?
 const outlinePath =
   "M13 11c2.673 0 4.011-3.231 2.121-5.121C13.231 3.989 10 5.327 10 8a3 3 0 003 3m0-4c.891 0 1.337 1.077.707 1.707C13.077 9.337 12 8.891 12 8a1 1 0 011-1m0 6c-6 0-6 4-6 4v2h12v-2s0-4-6-4m-4 4c0-.29.32-2 4-2 3.5 0 3.94 1.56 4 2";
 const approvePath =
