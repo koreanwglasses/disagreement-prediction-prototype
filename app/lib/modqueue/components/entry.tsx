@@ -510,7 +510,7 @@ const ModalContent = (
   if (action == "cancel") {
     returnObj.actionDesc = "cancel panel";
     returnObj.body =
-      'Cancelling this panel will erase all existing votes, including those made by other moderators. The case will be moved back into the "Needs Review" queue.';
+      'Cancelling this panel will erase all existing votes, including those made by other moderators. The case will be moved back into the "Open Cases" queue.';
     if (entry?.state?.mod_decision == "remove") {
       returnObj.body =
         returnObj.body.slice(0, -1) +

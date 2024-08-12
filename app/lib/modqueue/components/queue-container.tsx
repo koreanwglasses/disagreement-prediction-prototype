@@ -25,7 +25,7 @@ export const QueueContainer = () => {
   // Get list of entries from global state
   const entries = useAppSelector((state) => state.modqueue.entries);
 
-  const { completionMode, panelMode } = useAppSelector(
+  const { completionMode, panelMode, myCasesMode} = useAppSelector(
     (state) => state.queueContainer,
   );
 
@@ -50,7 +50,7 @@ export const QueueContainer = () => {
               {entries
                 .filter(
                   (entry) =>
-                    (completionMode === "Needs Review") ===
+                    (completionMode === "Open Cases") ===
                       _.isNil(entry.state?.mod_decision) &&
                     (panelMode === "All Cases" ||
                       (panelMode === "Panel Cases Only") ===
