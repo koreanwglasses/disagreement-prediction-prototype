@@ -18,8 +18,10 @@ export const ContextViewer = () => {
   return (
     entry && (
       <FlexCol>
-        <ButtonBase onClick={() => dispatch(setContextViewerEntry(null))}>
-          <Icon path={mdiClose} size={1.5} color={"rgba(0,0,0,0.25)"} />
+        <ButtonBase onClick={() => dispatch(setContextViewerEntry(null))}
+       	  sx={{justifyContent: "right"}}
+	>
+          <Icon path={mdiClose} size={1.5} color={"rgba(0,0,0,0.25)"}/>
         </ButtonBase>
 
         <FlexCol gap={4}>

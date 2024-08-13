@@ -33,8 +33,8 @@ export const QueueContainer = () => {
       <Flex>
         <FlexCol
           style={{
-            width: "66vw",
-            maxWidth: "1000px",
+            width: "75vw",
+            maxWidth: "1200px",
             borderRight: 1,
             borderStyle: "solid",
             borderColor: "rgba(0,0,0,0.25)",
@@ -71,8 +71,7 @@ export const QueueContainer = () => {
         </FlexCol>
         <Box
           sx={{
-            width: "33vw",
-            maxWidth: "800px",
+            width: "40vw",
             padding: 5,
             height: "100vh",
             overflowY: "auto",
