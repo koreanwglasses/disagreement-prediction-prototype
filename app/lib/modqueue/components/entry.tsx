@@ -241,78 +241,92 @@ const PredictionScoresVisualization = ({
   return (
     <Box sx={{ transform: "translate(0,0)", height: totalHeight, maxWidth }}>
       {/* Bars */}
-      <Box
-        position="absolute"
-        left="0"
-        bottom={barOffsetBottom}
-        width={`${s[0]}%`}
-        height={barHeight}
-        bgcolor={theme.palette.accept.main}
-      />
-      <Box
-        position="absolute"
-        left={`${s[0]}%`}
-        bottom={barOffsetBottom}
-        width={`${s[1]}%`}
-        height={barHeight}
-        bgcolor="#888"
-      />
-      <Box
-        position="absolute"
-        left={`${s[0] + s[1]}%`}
-        bottom={barOffsetBottom}
-        width={`${s[2]}%`}
-        height={barHeight}
-        bgcolor={theme.palette.remove.main}
-      />
-
+      { s[0] > 0 && 
+	<Box
+          position="absolute"
+          left="0"
+          bottom={barOffsetBottom}
+          width={`${s[0]}%`}
+          height={barHeight}
+          bgcolor={theme.palette.accept.main}
+        />
+      } 
+      { s[1] > 1 &&
+        <Box
+          position="absolute"
+          left={`${s[0]}%`}
+          bottom={barOffsetBottom}
+          width={`${s[1]}%`}
+          height={barHeight}
+          bgcolor="#888"
+        />
+      }
+      { s[2] > 1 && 
+        <Box
+          position="absolute"
+          left={`${s[0] + s[1]}%`}
+          bottom={barOffsetBottom}
+          width={`${s[2]}%`}
+          height={barHeight}
+          bgcolor={theme.palette.remove.main}
+        />
+      }
       {/* Ticks */}
-      <Box
-        position="absolute"
-        left={`${s[0]}%`}
-        bottom="0"
-        height={tickHeight}
-        borderRight={`solid ${tickWidth}`}
-      />
-      <Box
-        position="absolute"
-        left={`${s[0] + s[1]}%`}
-        bottom="0"
-        height={tickHeight}
-        borderRight={`solid ${tickWidth}`}
-      />
-
+      { s[0] > 1 &&
+	<Box
+          position="absolute"
+          left={`${s[0]}%`}
+          bottom="0"
+          height={tickHeight}
+          borderRight={`solid ${tickWidth}`}
+        />
+      }
+      { s[1] > 1 &&
+        <Box
+          position="absolute"
+          left={`${s[0] + s[1]}%`}
+          bottom="0"
+          height={tickHeight}
+          borderRight={`solid ${tickWidth}`}
+        />
+      }
       {/* Labels */}
-      <Box
-        position="absolute"
-        left="0"
-        bottom={labelOffsetBottom}
-        width={`${s[0]}%`}
-        fontSize={labelFontSize}
-        textAlign="center"
-      >
-        {s[0].toFixed(0)}% Approve
-      </Box>
-      <Box
-        position="absolute"
-        left={`${s[0]}%`}
-        bottom={labelOffsetBottom}
-        width={`${s[1]}%`}
-        fontSize={labelFontSize}
-        textAlign="center"
-      >
-        {s[1].toFixed(0)}% Unsure
-      </Box>
-      <Box
-        position="absolute"
-        left={`${s[0] + s[1]}%`}
-        bottom={labelOffsetBottom}
-        width={`${s[2]}%`}
-        fontSize={labelFontSize}
-        textAlign="center"
-      >
-        {s[2].toFixed(0)}% Remove
-      </Box>
+      { s[0] > 0 &&
+        <Box
+          position="absolute"
+          left="0"
+          bottom={labelOffsetBottom}
+          width={`${s[0]}%`}
+          fontSize={labelFontSize}
+          textAlign="center"
+        >
+          {s[0].toFixed(0)}% Approve
+        </Box>
+      }
+      { s[1] > 0 &&
+	<Box
+          position="absolute"
+          left={`${s[0]}%`}
+          bottom={labelOffsetBottom}
+          width={`${s[1]}%`}
+          fontSize={labelFontSize}
+          textAlign="center"
+        >
+          {s[1].toFixed(0)}% Unsure
+        </Box>
+      }
+      { s[2] > 0 &&
+	<Box
+          position="absolute"
+          left={`${s[0] + s[1]}%`}
+          bottom={labelOffsetBottom}
+          width={`${s[2]}%`}
+          fontSize={labelFontSize}
+          textAlign="center"
+        >
+          {s[2].toFixed(0)}% Remove
+        </Box>
+      }
     </Box>
   );
 };
