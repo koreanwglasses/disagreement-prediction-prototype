@@ -11,7 +11,8 @@ import {
   panelModes,
   setCompletionMode,
   setPanelMode,
-  setMyCasesOnly
+  setMyCasesOnly,
+  CompletionMode,
 } from "../slices/queue-container";
 
 export const ToolbarRenderer = () => {
@@ -20,10 +21,10 @@ export const ToolbarRenderer = () => {
     (state) => state.queueContainer,
   );
 
-  const queueTabEffect = (mode) => {
-      dispatch(setCompletionMode(mode));
-      dispatch(setMyCasesOnly(false));
-  }
+  const queueTabEffect = (mode: CompletionMode) => {
+    dispatch(setCompletionMode(mode));
+    dispatch(setMyCasesOnly(false));
+  };
 
   return (
     <Box display="flex" flexDirection="column">
@@ -39,11 +40,11 @@ export const ToolbarRenderer = () => {
           activeMode={panelMode}
           setActiveMode={(mode) => dispatch(setPanelMode(mode))}
         />
-	<QueueCheckbox
-	  label="Show My Cases Only"
-	  isChecked={myCasesOnly}
-	  toggleMode={() => dispatch(setMyCasesOnly(!myCasesOnly))}	
-	/>
+        <QueueCheckbox
+          label="Show My Cases Only"
+          isChecked={myCasesOnly}
+          toggleMode={() => dispatch(setMyCasesOnly(!myCasesOnly))}
+        />
       </Box>
     </Box>
   );

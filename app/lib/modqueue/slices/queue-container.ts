@@ -9,14 +9,13 @@ export const panelModes = [
 
 export type CompletionMode = (typeof completionModes)[number];
 export type PanelMode = (typeof panelModes)[number];
-export type MyCasesMode = boolean;
 
 export const queueContainerSlice = createSlice({
   name: "queueContainer",
   initialState: {
     completionMode: completionModes[0] as CompletionMode,
     panelMode: panelModes[0] as PanelMode,
-    myCasesOnly: false as MyCasesMode
+    myCasesOnly: false,
   },
   reducers: {
     setCompletionMode(state, action: PayloadAction<CompletionMode>) {
@@ -25,10 +24,11 @@ export const queueContainerSlice = createSlice({
     setPanelMode(state, action: PayloadAction<PanelMode>) {
       state.panelMode = action.payload;
     },
-    setMyCasesOnly(state, action: PayloadAction<MyCasesMode>) {
+    setMyCasesOnly(state, action: PayloadAction<boolean>) {
       state.myCasesOnly = action.payload;
     },
   },
 });
 
-export const { setCompletionMode, setPanelMode, setMyCasesOnly } = queueContainerSlice.actions;
+export const { setCompletionMode, setPanelMode, setMyCasesOnly } =
+  queueContainerSlice.actions;
