@@ -16,6 +16,7 @@ import { Flex, FlexCol } from "@/lib/components/styled";
 export const QueueContainer = () => {
   const dispatch = useAppDispatch();
   const context_id = useAppSelector((state) => state.modqueue.context_id);
+  const user_id = useAppSelector((state) => state.modqueue.user_id);
   // Fetch entries and get status
   const status = useAsync(
     () => dispatch(fetchEntries({ context_id: context_id })).unwrap(),
@@ -24,11 +25,9 @@ export const QueueContainer = () => {
 
   // Get list of entries from global state
   const entries = useAppSelector((state) => state.modqueue.entries);
-
-  const { completionMode, panelMode, myCasesMode} = useAppSelector(
+  const { completionMode, panelMode, myCasesOnly} = useAppSelector(
     (state) => state.queueContainer,
   );
-
   return (
     <>
       <Flex>
@@ -50,11 +49,14 @@ export const QueueContainer = () => {
               {entries
                 .filter(
                   (entry) =>
-                    (completionMode === "Open Cases") ===
-                      _.isNil(entry.state?.mod_decision) &&
-                    (panelMode === "All Cases" ||
+                    ((completionMode === "Open Cases") ===
+                      _.isNil(entry.state?.mod_decision)) &&
+                    ((panelMode === "All Cases" ||
                       (panelMode === "Panel Cases Only") ===
-                        !!entry.state?.panel?.is_active),
+                        !!entry.state?.panel?.is_active)) &&
+		    ((!myCasesOnly) ||
+		        entry?.state?.panel?.votes?.map((vote) => vote.user_id).includes(user_id)
+		    )
                 )
                 .map((entry) => (
                   <EntryRenderer entry={entry} key={entry.id} />

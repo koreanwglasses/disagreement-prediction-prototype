@@ -4,17 +4,19 @@ import { Box } from "@mui/material";
 import _ from "lodash";
 import { QueueTabs } from "@/lib/components/queue-tab";
 import { QueueDropdown } from "@/lib/components/queue-dropdown";
+import { QueueCheckbox } from "@/lib/components/queue-checkbox";
 import { useAppDispatch, useAppSelector } from "../reducers";
 import {
   completionModes,
   panelModes,
   setCompletionMode,
   setPanelMode,
+  setMyCasesOnly
 } from "../slices/queue-container";
 
 export const ToolbarRenderer = () => {
   const dispatch = useAppDispatch();
-  const { completionMode, panelMode } = useAppSelector(
+  const { completionMode, panelMode, myCasesOnly } = useAppSelector(
     (state) => state.queueContainer,
   );
 
@@ -32,6 +34,11 @@ export const ToolbarRenderer = () => {
           activeMode={panelMode}
           setActiveMode={(mode) => dispatch(setPanelMode(mode))}
         />
+	<QueueCheckbox
+	  label="Show My Cases Only"
+	  isChecked={myCasesOnly}
+	  toggleMode={() => dispatch(setMyCasesOnly(!myCasesOnly))}	
+	/>
       </Box>
     </Box>
   );
