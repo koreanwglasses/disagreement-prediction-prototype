@@ -342,15 +342,29 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
       }),
     ).unwrap();
 
-  const wipeVote = () =>
+  const wipeMyVote = () =>
     dispatch(
-      modqueueSlice.wipeVote({
+      modqueueSlice.wipeMyVote({
         entry_id: entry.id,
         user_id,
         context_id,
       }),
     ).unwrap();
-
+  const wipeAllVotesAndCancelPanel = () => {
+    dispatch(
+      modqueueSlice.wipeAllVotes({
+        entry_id: entry.id,
+	context_id
+      })
+    ).unwrap()
+    dispatch(
+      modqueueSlice.updatePanelState({
+	entry_id: entry.id,
+        is_active: false,
+	context_id
+      })
+    ).unwrap()
+  }
   const userInVote = entry?.state?.panel?.votes?.some(
     (elem) => elem.user_id === user_id,
   );
@@ -362,7 +376,6 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
   const userVote = entry?.state?.panel?.votes?.filter(
     (elem) => elem.user_id === user_id,
   );
-  const curDecision = entry?.state?.mod_decision;
 
   const openModal = (
     newModalContent: Omit<ModalState, "actionFunction">,
@@ -375,9 +388,11 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
       }),
     );
 
+  const curDecision = entry?.state?.mod_decision;
+
   return (
     <Box display="flex" gap={1.5} alignItems="center">
-      {!curDecision ? (
+      {!curDecision && (
         <>
           <ActionButton
             icon={<Icon path={mdiCheck} size={0.7} />}
@@ -388,7 +403,11 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
                 : "outlined"
             }
             palette={theme.palette.accept}
-            onClick={() => submitDecision("approve")}
+            onClick={ () =>
+              userInVote && userVote?.[0].decision ==="approve"
+	        ? wipeMyVote() 
+		: submitDecision("approve")
+	    }
             stopPropagation
           />
           <ActionButton
@@ -400,47 +419,66 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
                 : "outlined"
             }
             palette={theme.palette.remove}
-            onClick={() => submitDecision("remove")}
+	    onClick={ () =>
+	      userInVote && userVote?.[0].decision ==="remove"
+		? wipeMyVote() 
+		: submitDecision("remove")
+	    }
+            stopPropagation
+          />
+          <ActionButton
+            icon={<Icon path={mdiAccountGroupOutline} size={0.7} />}
+            label={
+              entry?.state?.panel?.is_active
+                ? "Cancel Panel"
+                : "Panel"
+            }
+            variant="outlined"
+            onClick={() =>
+	      othersInVote && entry?.state?.panel?.is_active
+		? openModal(ModalContent(entry, "cancel"), togglePanelStatus)
+	        : togglePanelStatus()
+	    }
             stopPropagation
           />
         </>
-      ) : userInVote || !entry?.state?.panel?.is_active ? (
+      )}
+      {(curDecision && userInVote && entry?.state?.panel?.is_active) && (
         <ActionButton
-          icon={<Icon path={mdiArrowULeftTop} size={0.7} />}
-          label={
-            entry?.state?.panel?.is_active
-              ? "Withdraw Vote"
-              : "Undo " +
-                curDecision[0].toUpperCase() +
-                curDecision.slice(1, -1) +
-                "al"
-          }
+          icon={<Icon path={mdiArrowULeftTop} size={0.7}/>}
+          label={"Withdraw My Vote"}
           variant="outlined"
-          onClick={() =>
-            othersInVote && !entry?.state?.panel?.is_active
-              ? openModal(ModalContent(entry, "wipe"), wipeVote)
-              : wipeVote()
-          }
+          onClick={wipeMyVote}
           stopPropagation
         />
-      ) : null}
-      <ActionButton
-        icon={<Icon path={mdiAccountGroupOutline} size={0.7} />}
-        label={
-          entry?.state?.panel?.is_active
-            ? "Cancel Panel"
-            : curDecision
-              ? "Re-open as Panel"
-              : "Panel"
-        }
-        variant="outlined"
-        onClick={() =>
-          othersInVote && entry?.state?.panel?.is_active
-            ? openModal(ModalContent(entry, "cancel"), togglePanelStatus)
-            : togglePanelStatus()
-        }
-        stopPropagation
-      />
+      )}
+      {(curDecision && !entry?.state?.panel?.is_active) && (
+        <ActionButton
+          icon={<Icon path={mdiAccountGroupOutline} size={0.7} />}
+          label={"Re-open as Panel"}
+          variant="outlined"
+          onClick={togglePanelStatus}
+          stopPropagation
+        />    
+      )}
+      {(curDecision) && (
+        <ActionButton
+          icon={<Icon path={mdiArrowULeftTop} size={0.7}/>}
+          label={
+            "Undo " +
+            curDecision[0].toUpperCase() +
+            curDecision.slice(1, -1) +
+            "al"
+          }
+          variant="outlined"
+          onClick={ () =>
+            othersInVote
+	      ? openModal(ModalContent(entry, "wipe"), wipeAllVotesAndCancelPanel)
+	      : wipeAllVotesAndCancelPanel()
+	  }
+          stopPropagation
+        />
+      )}
       {entry.state?.panel?.is_active && (
         <Box display="flex" alignItems="top">
           {[0, 1, 2].map((i) => {
@@ -510,7 +548,12 @@ const ModalContent = (
   if (action == "cancel") {
     returnObj.actionDesc = "cancel panel";
     returnObj.body =
-      'Cancelling this panel will erase all existing votes, including those made by other moderators. The case will be moved back into the "Open Cases" queue.';
+      'Cancelling this panel will erase all existing votes, including those made by other moderators.';
+    if (entry?.state?.mod_decision) {
+      returnObj.body =
+	returnObj.body + 
+        'The case will be moved back into the "Open Cases" queue.';
+    }
     if (entry?.state?.mod_decision == "remove") {
       returnObj.body =
         returnObj.body.slice(0, -1) +
@@ -522,8 +565,16 @@ const ModalContent = (
       entry?.state?.mod_decision === "approve"
         ? "undo approval"
         : "undo removal";
-    returnObj.body =
-      "This action was taken by another moderator. Consider starting a panel instead if you disagree with their decision";
+    if (!entry?.state?.panel?.is_active) {
+      returnObj.body =
+        "This action was taken by another moderator. Consider starting a panel instead if you disagree with their decision";
+    } else {
+      returnObj.body =
+        'This comment was ' + 
+	( entry?.state?.mod_decision === "approve" ? 'approved' : 'removed') +
+        ' via panel. If you proceed, you will erase all existing votes on the panel, including those made by other moderators.';
+    }
   }
   return returnObj;
+
 };

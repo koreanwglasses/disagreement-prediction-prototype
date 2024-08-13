@@ -152,7 +152,7 @@ export const updatePanelState = async ({
   return final_val;
 };
 
-export const wipeVote = async ({
+export const wipeMyVote = async ({
   entry_id,
   user_id,
   context_id,
@@ -164,20 +164,26 @@ export const wipeVote = async ({
   const key = { entry_id: ObjectId.createFromHexString(entry_id), context_id };
   const collection = await getEntryStatesCollection();
   const currentState = await collection.findOne(key);
-  var set = {};
-  if (!currentState?.panel?.is_active) {
-    set = { mod_decision: null, "panel.votes": [] };
-  } else {
-    let new_votes = currentState.panel.votes.filter(
-      (elem) => elem.user_id != user_id,
-    );
-    let new_vote_decisions = new_votes.map((elem) => elem.decision);
-    let new_decision = computeDecisionFromVotes(new_vote_decisions);
-    set = { mod_decision: new_decision, "panel.votes": new_votes };
-  }
-
+  let new_votes = currentState.panel.votes.filter(
+    (elem) => elem.user_id != user_id,
+  );
+  let new_vote_decisions = new_votes.map((elem) => elem.decision);
+  let new_decision = computeDecisionFromVotes(new_vote_decisions);
+  let set = { mod_decision: new_decision, "panel.votes": new_votes };
   await collection.updateOne(key, { $set: set }, { upsert: true });
-
+  return cleanEntryState(await collection.findOne(key));
+};
+export const wipeAllVotes = async ({
+  entry_id,
+  context_id,
+}: {
+  entry_id: string;
+  context_id: string;
+}) => {
+  const key = { entry_id: ObjectId.createFromHexString(entry_id), context_id };
+  const collection = await getEntryStatesCollection();
+  let set = { mod_decision: null, "panel.votes": []};
+  await collection.updateOne(key, { $set: set }, { upsert: true });
   return cleanEntryState(await collection.findOne(key));
 };
 

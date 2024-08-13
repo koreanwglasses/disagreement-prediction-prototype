@@ -22,9 +22,13 @@ export const submitDecision = createAsyncThunk(
     Model.submitDecision(args),
 );
 
-export const wipeVote = createAsyncThunk(
-  "entries/wipeVote",
-  (args: Parameters<typeof Model.wipeVote>[0]) => Model.wipeVote(args),
+export const wipeMyVote = createAsyncThunk(
+  "entries/wipeMyVote",
+  (args: Parameters<typeof Model.wipeMyVote>[0]) => Model.wipeMyVote(args),
+);
+export const wipeAllVotes = createAsyncThunk(
+  "entries/wipeAllVotes",
+  (args: Parameters<typeof Model.wipeAllVotes>[0]) => Model.wipeAllVotes(args),
 );
 ///// Create slice
 const initialState = {
@@ -66,5 +70,6 @@ export const modqueueSlice = createSlice({
       })
       .addCase(updatePanelState.fulfilled, updateEntryStateReducer)
       .addCase(submitDecision.fulfilled, updateEntryStateReducer)
-      .addCase(wipeVote.fulfilled, updateEntryStateReducer),
+      .addCase(wipeMyVote.fulfilled, updateEntryStateReducer)
+      .addCase(wipeAllVotes.fulfilled, updateEntryStateReducer),
 });
