@@ -20,6 +20,11 @@ export const ToolbarRenderer = () => {
     (state) => state.queueContainer,
   );
 
+  const queueTabEffect = (mode) => {
+      dispatch(setCompletionMode(mode));
+      dispatch(setMyCasesOnly(false));
+  }
+
   return (
     <Box display="flex" flexDirection="column">
       <Box sx={{ fontSize: 30, fontWeight: "semi-bold" }}>Mod Queue</Box>
@@ -27,7 +32,7 @@ export const ToolbarRenderer = () => {
         <QueueTabs
           modes={completionModes}
           activeMode={completionMode}
-          setActiveMode={(mode) => dispatch(setCompletionMode(mode))}
+          setActiveMode={queueTabEffect}
         />
         <QueueDropdown
           modes={panelModes}
