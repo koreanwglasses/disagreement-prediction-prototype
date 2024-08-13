@@ -241,8 +241,8 @@ const PredictionScoresVisualization = ({
   return (
     <Box sx={{ transform: "translate(0,0)", height: totalHeight, maxWidth }}>
       {/* Bars */}
-      { s[0] > 0 && 
-	<Box
+      {s[0] > 0 && (
+        <Box
           position="absolute"
           left="0"
           bottom={barOffsetBottom}
@@ -250,8 +250,8 @@ const PredictionScoresVisualization = ({
           height={barHeight}
           bgcolor={theme.palette.accept.main}
         />
-      } 
-      { s[1] > 1 &&
+      )}
+      {s[1] > 1 && (
         <Box
           position="absolute"
           left={`${s[0]}%`}
@@ -260,8 +260,8 @@ const PredictionScoresVisualization = ({
           height={barHeight}
           bgcolor="#888"
         />
-      }
-      { s[2] > 1 && 
+      )}
+      {s[2] > 1 && (
         <Box
           position="absolute"
           left={`${s[0] + s[1]}%`}
@@ -270,18 +270,18 @@ const PredictionScoresVisualization = ({
           height={barHeight}
           bgcolor={theme.palette.remove.main}
         />
-      }
+      )}
       {/* Ticks */}
-      { s[0] > 1 &&
-	<Box
+      {s[0] > 1 && (
+        <Box
           position="absolute"
           left={`${s[0]}%`}
           bottom="0"
           height={tickHeight}
           borderRight={`solid ${tickWidth}`}
         />
-      }
-      { s[1] > 1 &&
+      )}
+      {s[1] > 1 && (
         <Box
           position="absolute"
           left={`${s[0] + s[1]}%`}
@@ -289,9 +289,9 @@ const PredictionScoresVisualization = ({
           height={tickHeight}
           borderRight={`solid ${tickWidth}`}
         />
-      }
+      )}
       {/* Labels */}
-      { s[0] > 0 &&
+      {s[0] > 0 && (
         <Box
           position="absolute"
           left="0"
@@ -302,9 +302,9 @@ const PredictionScoresVisualization = ({
         >
           {s[0].toFixed(0)}% Approve
         </Box>
-      }
-      { s[1] > 0 &&
-	<Box
+      )}
+      {s[1] > 0 && (
+        <Box
           position="absolute"
           left={`${s[0]}%`}
           bottom={labelOffsetBottom}
@@ -314,9 +314,9 @@ const PredictionScoresVisualization = ({
         >
           {s[1].toFixed(0)}% Unsure
         </Box>
-      }
-      { s[2] > 0 &&
-	<Box
+      )}
+      {s[2] > 0 && (
+        <Box
           position="absolute"
           left={`${s[0] + s[1]}%`}
           bottom={labelOffsetBottom}
@@ -326,7 +326,7 @@ const PredictionScoresVisualization = ({
         >
           {s[2].toFixed(0)}% Remove
         </Box>
-      }
+      )}
     </Box>
   );
 };
@@ -336,6 +336,7 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
   const dispatch = useAppDispatch();
   const user_id = useAppSelector((state) => state.modqueue.user_id);
   const context_id = useAppSelector((state) => state.modqueue.context_id);
+  const disabledModals = useAppSelector((state) => state.modal.disabledModals);
 
   const togglePanelStatus = () =>
     dispatch(
@@ -394,13 +395,20 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
   const openModal = (
     newModalContent: Omit<ModalState, "actionFunction">,
     newModalAction: ModalState["actionFunction"],
-  ) =>
-    dispatch(
-      modalSlice.openModal({
-        ...newModalContent,
-        actionFunction: newModalAction,
-      }),
-    );
+  ) => {
+    if (disabledModals[newModalContent.name]) {
+      // Skip opening the modal and execute action function immediately if the modal is disabled
+      newModalAction();
+    } else {
+      // Otherwise open the modal as usual
+      dispatch(
+        modalSlice.openModal({
+          ...newModalContent,
+          actionFunction: newModalAction,
+        }),
+      );
+    }
+  };
 
   const curDecision = entry?.state?.mod_decision;
 
@@ -559,17 +567,20 @@ const ModalContent = (
   entry: Entry,
   action: string,
 ): Omit<ModalState, "actionFunction"> => {
-  const returnObj = { open: true, actionDesc: "", body: "" };
+  const returnObj = { open: true, name: "", actionDesc: "", body: "" };
   if (action == "cancel") {
+    returnObj.name = "cancel/wipe";
     returnObj.actionDesc = "cancel panel";
     returnObj.body =
       "Cancelling this panel will erase all existing votes, including those made by other moderators.";
     if (entry?.state?.mod_decision) {
+      returnObj.name = "cancel/move";
       returnObj.body =
         returnObj.body +
         'The case will be moved back into the "Open Cases" queue.';
     }
     if (entry?.state?.mod_decision == "remove") {
+      returnObj.name = "cancel/visible";
       returnObj.body =
         returnObj.body.slice(0, -1) +
         ", and the comment will become visible to users again.";
@@ -581,9 +592,11 @@ const ModalContent = (
         ? "undo approval"
         : "undo removal";
     if (!entry?.state?.panel?.is_active) {
+      returnObj.name = "wipe/another-moderator";
       returnObj.body =
         "This action was taken by another moderator. Consider starting a panel instead if you disagree with their decision";
     } else {
+      returnObj.name = "wipe/erase-votes";
       returnObj.body =
         "This comment was " +
         (entry?.state?.mod_decision === "approve" ? "approved" : "removed") +
