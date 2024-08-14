@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: app-prod.DOCKERFILE
     ports:
-      - "3000:3000"
+      - "80:3000"
 
   db:
     image: mongo
