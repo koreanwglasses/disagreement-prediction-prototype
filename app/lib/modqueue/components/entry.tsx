@@ -48,7 +48,7 @@ export const EntryRenderer = ({ entry }: { entry: Entry }) => {
         <HeaderRenderer entry={entry} />
         <BodyRenderer entry={entry} />
         <ReportsRenderer entry={entry} />
-        <PredictionsRenderer entry={entry} />
+        <PredictionsRenderer entry={entry} includeHeader={true}/>
         <ActionsRenderer entry={entry} />
       </Box>
     </Box>
@@ -162,7 +162,13 @@ const ReportsRenderer = ({ entry }: { entry: Entry }) => {
   );
 };
 
-const PredictionsRenderer = ({ entry }: { entry: Entry }) => {
+const PredictionsRenderer = ({
+  entry,
+  includeHeader
+}: {
+  entry: Entry,
+  includeHeader: boolean
+}) => {
   const [expanded, setExpanded] = useState(false);
   const toggleAccordion: MouseEventHandler<HTMLDivElement> = (e) => {
     setExpanded((prev) => !prev);
@@ -176,30 +182,32 @@ const PredictionsRenderer = ({ entry }: { entry: Entry }) => {
           borderRadius: 1,
           boxShadow: "none",
         }}
-        expanded={expanded}
+        expanded={!includeHeader || expanded}
         onClick={toggleAccordion}
       >
-        <AccordionSummary
-          expandIcon={
+        { includeHeader && (
+	  <AccordionSummary
+            expandIcon={
+              <Icon
+                path={mdiChevronDown}
+                size={1}
+                aria-controls={"panel-prediction-content-" + entry.id}
+              />
+            }
+            sx={{ borderRadius: "4px" }}
+          > 
             <Icon
-              path={mdiChevronDown}
+              path={mdiAccountGroup}
               size={1}
-              aria-controls={"panel-prediction-content-" + entry.id}
+              color="#ffc33d"
+              className="flagIcon"
+              style={{ flexShrink: 0 }}
             />
-          }
-          sx={{ borderRadius: "4px" }}
-        >
-          <Icon
-            path={mdiAccountGroup}
-            size={1}
-            color="#ffc33d"
-            className="flagIcon"
-            style={{ flexShrink: 0 }}
-          />
-          <Box component="h3" fontWeight="bold" paddingLeft="8px">
-            What would other moderators do?
-          </Box>
-        </AccordionSummary>
+            <Box component="h3" fontWeight="bold" paddingLeft="8px">
+              What would other moderators do?
+            </Box>
+          </AccordionSummary> 
+        )}
         <AccordionDetails sx={{ width: "100%" }}>
           <PredictionScoresVisualization scores={entry.panel_predictions} />
           If every moderator on your team took a vote, our model predicts{" "}
@@ -213,10 +221,8 @@ const PredictionsRenderer = ({ entry }: { entry: Entry }) => {
           of moderators would act.{" "}
           {entry.panel_predictions.approve < 0.7 &&
           entry.panel_predictions.remove < 0.7
-            ? "Because consensus for this case is low, we recommend panel review."
+            ? <span>Because consensus for this case is low, <strong>we recommend starting a panel</strong></span>
             : ""}{" "}
-          Note that our model does make mistakes, so these predictions should
-          not be interpreted as a guarantee for how other moderators would act.
         </AccordionDetails>
       </Accordion>
     )
@@ -401,8 +407,9 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
         actionFunction: newModalAction,
       }),
     );
-
   const curDecision = entry?.state?.mod_decision;
+  const uncertain = (entry.panel_predictions.remove < 0.8 &&
+		     entry.panel_predictions.approve < 0.8)
 
   return (
     <Box display="flex" gap={1.5} alignItems="center">
@@ -417,11 +424,14 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
                 : "outlined"
             }
             palette={theme.palette.accept}
-            onClick={() =>
+            onClick={() => {
               userInVote && userVote?.[0].decision === "approve"
                 ? wipeMyVote()
-                : submitDecision("approve")
-            }
+                : uncertain && !entry?.state?.panel?.is_active
+		  ? openModal(ModalContent(entry, "uncertain"),
+			      ()=>submitDecision("approve") )
+		  : submitDecision("approve")
+            }}
             stopPropagation
           />
           <ActionButton
@@ -433,11 +443,14 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
                 : "outlined"
             }
             palette={theme.palette.remove}
-            onClick={() =>
+            onClick={() => {
               userInVote && userVote?.[0].decision === "remove"
                 ? wipeMyVote()
-                : submitDecision("remove")
-            }
+                : uncertain && !entry?.state?.panel?.is_active
+		  ? openModal(ModalContent(entry, "uncertain"),
+			      ()=>submitDecision("remove"))
+		  : submitDecision("remove")
+            }}
             stopPropagation
           />
           <ActionButton
@@ -446,7 +459,8 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
             variant="outlined"
             onClick={() =>
               othersInVote && entry?.state?.panel?.is_active
-                ? openModal(ModalContent(entry, "cancel"), togglePanelStatus)
+                ? openModal(ModalContent(entry, "cancel"),
+			    togglePanelStatus)
                 : togglePanelStatus()
             }
             stopPropagation
@@ -560,7 +574,7 @@ const ModalContent = (
   action: string,
 ): Omit<ModalState, "actionFunction"> => {
   const returnObj = { open: true, actionDesc: "", body: "" };
-  if (action == "cancel") {
+  if (action === "cancel") {
     returnObj.actionDesc = "cancel panel";
     returnObj.body =
       "Cancelling this panel will erase all existing votes, including those made by other moderators.";
@@ -574,7 +588,7 @@ const ModalContent = (
         returnObj.body.slice(0, -1) +
         ", and the comment will become visible to users again.";
     }
-  } else if (action == "wipe") {
+  } else if (action === "wipe") {
     console.log("hit else case");
     returnObj.actionDesc =
       entry?.state?.mod_decision === "approve"
@@ -589,6 +603,9 @@ const ModalContent = (
         (entry?.state?.mod_decision === "approve" ? "approved" : "removed") +
         " via panel. If you proceed, you will erase all existing votes on the panel, including those made by other moderators.";
     }
+  } else if (action === "uncertain") {
+    returnObj.actionDesc = "approve"
+    returnObj.body = <PredictionsRenderer entry={entry} includeHeader={false}/>
   }
   return returnObj;
 };

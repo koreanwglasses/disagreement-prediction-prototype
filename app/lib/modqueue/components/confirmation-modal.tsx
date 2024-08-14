@@ -21,7 +21,7 @@ export const ConfirmationModal = () => {
             transform: "translate(-50%, -50%)",
             backgroundColor: "white",
             display: "flex",
-            width: "25%",
+            width: "35%",
             borderRadius: 2,
             flexDirection: "column",
             alignItems: "center",
