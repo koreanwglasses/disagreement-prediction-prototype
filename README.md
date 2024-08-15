@@ -30,6 +30,26 @@ docker compose restart app; docker compose logs -f app
 docker compose down -v; docker compose up -d; docker compose logs -f app db
 ```
 
+# Production Commands
+
+**Build production images.** Use before starting the server when the source code has been modified.
+
+```sh
+docker compose -f docker-compose-prod.yml build
+```
+
+**Start in production mode.** Start the container in production mode. Useful when running on a dedicated server. 
+
+```sh
+docker compose -f docker-compose-prod.yml up -d; docker compose -f docker-compose-prod.yml logs -f app
+```
+
+**Hard reset.** Restore the internal database to the initial state and restarts the server.
+
+```sh
+docker compose -f docker-compose-prod.yml down -v; docker compose -f docker-compose-prod.yml up -d; docker compose -f docker-compose-prod.yml logs -f app db
+```
+
 # Important Files
 
 `./app/app/modqueue/page.tsx` - Defines the layout of the page at `/modqueue`
