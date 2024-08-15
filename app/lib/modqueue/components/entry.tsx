@@ -430,7 +430,7 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
 		     entry.panel_predictions.approve < 0.8)
 
   return (
-    <Box display="flex" gap={1.5} alignItems="center">
+    <Box display="flex" gap={1.5} alignItems={"start"}>
       {!curDecision && (
         <>
           <ActionButton
@@ -497,7 +497,7 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
       {curDecision && !entry?.state?.panel?.is_active && (
         <ActionButton
           icon={<Icon path={mdiAccountGroupOutline} size={0.7} />}
-          label={"Re-open as Panel"}
+          label={"Re-open in Panel Mode"}
           variant="outlined"
           onClick={togglePanelStatus}
           stopPropagation
@@ -534,42 +534,41 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
                 display={"flex"}
                 flexDirection={"column"}
                 alignItems={"center"}
-                gap={0}
-                paddingTop={"13px"}
                 key={i}
               > 
 	        <Tooltip title={ curUser ? curUser : ""}>
-                  <Icon
-                    size={1.6}
-                    key={i}
-                    // @ts-ignore Forwards the prop to the underlying svg
-                    viewBox={"0 0 20 20.5"}
-                    color={
-                      decision === "approve" &&
-                      (userInVote || entry?.state?.mod_decision)
-                        ? theme.palette.accept.main
-                        : decision && (userInVote || entry?.state?.mod_decision)
-                          ? theme.palette.remove.main
-                          : "#888"
-                    }
-                    path={
-                      decision === "approve" &&
-                      (userInVote || entry?.state?.mod_decision)
-                        ? approvePath
-                        : decision && (userInVote || entry?.state?.mod_decision)
-                          ? removePath
-                          : decision
-                            ? filledPath
-                            : outlinePath
-                    }
-                  />
+		  <span style={{height:"2rem", width:"2.1rem"}}>
+                    <Icon
+                      size={1.6}
+                      key={i}
+                      // @ts-ignore Forwards the prop to the underlying svg
+                      color={
+                        decision === "approve" &&
+                        (userInVote || entry?.state?.mod_decision)
+                          ? theme.palette.accept.main
+                          : decision && (userInVote || entry?.state?.mod_decision)
+                            ? theme.palette.remove.main
+                            : "#888"
+                      }
+                      path={
+                        decision === "approve" &&
+                        (userInVote || entry?.state?.mod_decision)
+                          ? approvePath
+                          : decision && (userInVote || entry?.state?.mod_decision)
+                            ? removePath
+                            : decision
+                              ? filledPath
+                              : outlinePath
+                      }
+                    />
+		  </span>
 		</Tooltip>
                 <Box
                   fontSize={"13px"}
-                  marginLeft={curUser === user_id ? "9px" : "0px"}
+                  marginLeft={curUser === user_id ? "2px" : "0px"}
                   color={curUser === user_id ? "black" : "white"}
                 >
-                  {curUser === user_id ? "You" : "_"}
+                  {"You"}
                 </Box>
               </Box>
             );
