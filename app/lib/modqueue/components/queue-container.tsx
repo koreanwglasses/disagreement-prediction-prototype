@@ -51,7 +51,7 @@ export const QueueContainer = () => {
                   (entry) =>
                     ((completionMode === "Open Cases") ===
                       _.isNil(entry.state?.mod_decision)) &&
-                    ((panelMode === "All Cases" ||
+                    ((panelMode === "Panel/Non-Panel Cases" ||
                       (panelMode === "Panel Cases Only") ===
                         !!entry.state?.panel?.is_active)) &&
 		    ((!myCasesOnly) ||

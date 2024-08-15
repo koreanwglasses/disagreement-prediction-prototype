@@ -8,6 +8,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Tooltip
 } from "@mui/material";
 import Icon from "@mdi/react";
 import {
@@ -91,13 +92,21 @@ const HeaderRenderer = ({ entry }: { entry: Entry }) => {
         </Box>
       )}
       {finalDecision ? (
-        <Box sx={decisionMarkerStyle}>
-          <Icon
-            path={finalDecision == "remove" ? mdiClose : mdiCheck}
-            size={0.5}
-          />
-          {`${finalDecision.charAt(0).toUpperCase() + finalDecision.slice(1)}d`}
-        </Box>
+	<Tooltip title={(finalDecision == "approve"
+	                 ? "Approved by "
+			 : "Removed by ")
+		        + (entry?.state?.panel?.is_active
+			    ? "panel"
+		            : entry?.state?.panel?.votes[0].user_id)
+	}>
+          <Box sx={decisionMarkerStyle}>
+            <Icon
+              path={finalDecision == "remove" ? mdiClose : mdiCheck}
+              size={0.5}
+            />
+            {`${finalDecision.charAt(0).toUpperCase() + finalDecision.slice(1)}d`}
+          </Box>
+	</Tooltip>
       ) : null}
     </Box>
   );
@@ -528,31 +537,33 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
                 gap={0}
                 paddingTop={"13px"}
                 key={i}
-              >
-                <Icon
-                  size={1.6}
-                  key={i}
-                  // @ts-ignore Forwards the prop to the underlying svg
-                  viewBox={"0 0 20 20.5"}
-                  color={
-                    decision === "approve" &&
-                    (userInVote || entry?.state?.mod_decision)
-                      ? theme.palette.accept.main
-                      : decision && (userInVote || entry?.state?.mod_decision)
-                        ? theme.palette.remove.main
-                        : "#888"
-                  }
-                  path={
-                    decision === "approve" &&
-                    (userInVote || entry?.state?.mod_decision)
-                      ? approvePath
-                      : decision && (userInVote || entry?.state?.mod_decision)
-                        ? removePath
-                        : decision
-                          ? filledPath
-                          : outlinePath
-                  }
-                />
+              > 
+	        <Tooltip title={ curUser ? curUser : ""}>
+                  <Icon
+                    size={1.6}
+                    key={i}
+                    // @ts-ignore Forwards the prop to the underlying svg
+                    viewBox={"0 0 20 20.5"}
+                    color={
+                      decision === "approve" &&
+                      (userInVote || entry?.state?.mod_decision)
+                        ? theme.palette.accept.main
+                        : decision && (userInVote || entry?.state?.mod_decision)
+                          ? theme.palette.remove.main
+                          : "#888"
+                    }
+                    path={
+                      decision === "approve" &&
+                      (userInVote || entry?.state?.mod_decision)
+                        ? approvePath
+                        : decision && (userInVote || entry?.state?.mod_decision)
+                          ? removePath
+                          : decision
+                            ? filledPath
+                            : outlinePath
+                    }
+                  />
+		</Tooltip>
                 <Box
                   fontSize={"13px"}
                   marginLeft={curUser === user_id ? "9px" : "0px"}
