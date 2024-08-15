@@ -178,7 +178,7 @@ const PredictionsRenderer = ({
     entry.panel_predictions && (
       <Accordion
         sx={{
-          bgcolor: "#ffefcc",
+          bgcolor: "#e5ebee",
           borderRadius: 1,
           boxShadow: "none",
         }}
@@ -199,12 +199,12 @@ const PredictionsRenderer = ({
             <Icon
               path={mdiAccountGroup}
               size={1}
-              color="#ffc33d"
+              color="#0b4b6b"
               className="flagIcon"
               style={{ flexShrink: 0 }}
             />
             <Box component="h3" fontWeight="bold" paddingLeft="8px">
-              What would other moderators do?
+              Prediction: What would other r/CMV moderators do? 
             </Box>
           </AccordionSummary> 
         )}
@@ -221,7 +221,7 @@ const PredictionsRenderer = ({
           of moderators would act.{" "}
           {entry.panel_predictions.approve < 0.7 &&
           entry.panel_predictions.remove < 0.7
-            ? <span>Because consensus for this case is low, <strong>we recommend starting a panel</strong></span>
+            ? <span>Because consensus for this case is low, <strong>we recommend starting a panel.</strong></span>
             : ""}{" "}
         </AccordionDetails>
       </Accordion>
@@ -426,7 +426,7 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
         <>
           <ActionButton
             icon={<Icon path={mdiCheck} size={0.7} />}
-            label="Approve"
+            label={entry?.state?.panel?.is_active ? "Vote for Approval" : "Approve"}
             variant={
               userInVote && userVote?.[0].decision === "approve"
                 ? "filled"
@@ -437,7 +437,7 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
               userInVote && userVote?.[0].decision === "approve"
                 ? wipeMyVote()
                 : uncertain && !entry?.state?.panel?.is_active
-		  ? openModal(ModalContent(entry, "uncertain"),
+		  ? openModal(ModalContent(entry, "approve"),
 			      ()=>submitDecision("approve") )
 		  : submitDecision("approve")
             }}
@@ -445,7 +445,7 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
           />
           <ActionButton
             icon={<Icon path={mdiClose} size={0.7} />}
-            label="Remove"
+            label={entry?.state?.panel?.is_active ? "Vote for Removal" : "Remove"}
             variant={
               userInVote && userVote?.[0].decision === "remove"
                 ? "filled"
@@ -456,7 +456,7 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
               userInVote && userVote?.[0].decision === "remove"
                 ? wipeMyVote()
                 : uncertain && !entry?.state?.panel?.is_active
-		  ? openModal(ModalContent(entry, "uncertain"),
+		  ? openModal(ModalContent(entry, "remove"),
 			      ()=>submitDecision("remove"))
 		  : submitDecision("remove")
             }}
@@ -616,9 +616,12 @@ const ModalContent = (
         (entry?.state?.mod_decision === "approve" ? "approved" : "removed") +
         " via panel. If you proceed, you will erase all existing votes on the panel, including those made by other moderators.";
     }
-  } else if (action === "uncertain") {
-    returnObj.actionDesc = "approve"
-    returnObj.body = <PredictionsRenderer entry={entry} includeHeader={false}/>
+  } else if (action === "approve" || action === "remove") {
+    if (entry.panel_predictions.remove < .7 &&  entry.panel_predictions.approve < .7) {
+      returnObj.name = "uncertain/" + action;
+      returnObj.actionDesc = action
+      returnObj.body = <PredictionsRenderer entry={entry} includeHeader={false}/>
+    }
   }
   return returnObj;
 };

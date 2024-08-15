@@ -2,7 +2,7 @@ import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 export const completionModes = ["Open Cases", "Resolved"] as const;
 export const panelModes = [
-  "All Cases",
+  "Panel/Non-Panel Cases",
   "Panel Cases Only",
   "Non-Panel Cases Only",
 ] as const;
