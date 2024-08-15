@@ -18,10 +18,11 @@ export const ContextViewer = () => {
   return (
     entry && (
       <FlexCol>
-        <ButtonBase onClick={() => dispatch(setContextViewerEntry(null))}
-       	  sx={{justifyContent: "right"}}
-	>
-          <Icon path={mdiClose} size={1.5} color={"rgba(0,0,0,0.25)"}/>
+        <ButtonBase
+          onClick={() => dispatch(setContextViewerEntry(null))}
+          sx={{ justifyContent: "right" }}
+        >
+          <Icon path={mdiClose} size={1.5} color={"rgba(0,0,0,0.25)"} />
         </ButtonBase>
 
         <FlexCol gap={4}>
@@ -64,7 +65,7 @@ export const ContextViewer = () => {
 
           {/* This Comment */}
           <Flex justifyContent="end">
-            <Box sx={showParent ? { width: "calc(100% - 40px)" } : {}}>
+            <Box sx={{ width: showParent ? "calc(100% - 40px)" : "100%" }}>
               <Comment
                 text={entry.text}
                 author={entry.author_name}
