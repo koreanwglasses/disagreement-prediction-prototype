@@ -430,163 +430,164 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
 		     entry.panel_predictions.approve < 0.8)
 
   return (
-    <Box display="flex" gap={1.5} alignItems={"start"}>
-      {!curDecision && (
-        <>
+    <Box display="flex" gap={1.5} alignItems={"start"} justifyContent={"space-between"}>
+      <Box display="flex" gap={1.5} alignItems={"start"}>
+        {!curDecision && (
+          <>
+            <ActionButton
+              icon={<Icon path={mdiCheck} size={0.7} />}
+              label={entry?.state?.panel?.is_active ? "Vote for Approval" : "Approve"}
+              variant={
+                userInVote && userVote?.[0].decision === "approve"
+                  ? "filled"
+                  : "outlined"
+              }
+              palette={theme.palette.accept}
+              onClick={() => {
+                userInVote && userVote?.[0].decision === "approve"
+                  ? wipeMyVote()
+                  : uncertain && !entry?.state?.panel?.is_active
+	      	    ? openModal(ModalContent(entry, "approve"),
+		       	        ()=>submitDecision("approve") )
+   	 	    : submitDecision("approve")
+              }}
+              stopPropagation
+            />
+            <ActionButton
+              icon={<Icon path={mdiClose} size={0.7} />}
+              label={entry?.state?.panel?.is_active ? "Vote for Removal" : "Remove"}
+              variant={
+                userInVote && userVote?.[0].decision === "remove"
+                  ? "filled"
+                  : "outlined"
+              }
+              palette={theme.palette.remove}
+              onClick={() => {
+                userInVote && userVote?.[0].decision === "remove"
+                  ? wipeMyVote()
+                  : uncertain && !entry?.state?.panel?.is_active
+		    ? openModal(ModalContent(entry, "remove"),
+  			        ()=>submitDecision("remove"))
+  		    : submitDecision("remove")
+              }}
+              stopPropagation
+            />
+          </>
+        )}
+        {curDecision && userInVote && entry?.state?.panel?.is_active && (
           <ActionButton
-            icon={<Icon path={mdiCheck} size={0.7} />}
-            label={entry?.state?.panel?.is_active ? "Vote for Approval" : "Approve"}
-            variant={
-              userInVote && userVote?.[0].decision === "approve"
-                ? "filled"
-                : "outlined"
-            }
-            palette={theme.palette.accept}
-            onClick={() => {
-              userInVote && userVote?.[0].decision === "approve"
-                ? wipeMyVote()
-                : uncertain && !entry?.state?.panel?.is_active
-		  ? openModal(ModalContent(entry, "approve"),
-			      ()=>submitDecision("approve") )
-		  : submitDecision("approve")
-            }}
+            icon={<Icon path={mdiArrowULeftTop} size={0.7} />}
+            label={"Withdraw My Vote"}
+            variant="outlined"
+            onClick={wipeMyVote}
             stopPropagation
           />
-          <ActionButton
-            icon={<Icon path={mdiClose} size={0.7} />}
-            label={entry?.state?.panel?.is_active ? "Vote for Removal" : "Remove"}
-            variant={
-              userInVote && userVote?.[0].decision === "remove"
-                ? "filled"
-                : "outlined"
-            }
-            palette={theme.palette.remove}
-            onClick={() => {
-              userInVote && userVote?.[0].decision === "remove"
-                ? wipeMyVote()
-                : uncertain && !entry?.state?.panel?.is_active
-		  ? openModal(ModalContent(entry, "remove"),
-			      ()=>submitDecision("remove"))
-		  : submitDecision("remove")
-            }}
-            stopPropagation
-          />
+        )}
+        {curDecision && !entry?.state?.panel?.is_active && (
           <ActionButton
             icon={<Icon path={mdiAccountGroupOutline} size={0.7} />}
-            label={entry?.state?.panel?.is_active ? "Cancel Panel" : "Panel"}
+            label={"Re-open in Panel Mode"}
+            variant="outlined"
+            onClick={togglePanelStatus}
+            stopPropagation
+          />
+        )}
+        {curDecision && (
+          <ActionButton
+            icon={<Icon path={mdiArrowULeftTop} size={0.7} />}
+            label={
+              "Undo " +
+              curDecision[0].toUpperCase() +
+              curDecision.slice(1, -1) +
+              "al"
+            }
+            variant="outlined"
+            onClick={() =>
+              othersInVote
+                ? openModal(
+                    ModalContent(entry, "wipe"),
+                    wipeAllVotesAndCancelPanel,
+                  )
+                : wipeAllVotesAndCancelPanel()
+            }
+            stopPropagation
+          />
+        )}
+      </Box>
+      <Box display="flex" gap={5} alignItems={"start"}>
+        {entry.state?.panel?.is_active && (
+          <Box display="flex" gap={0.5} alignItems={"start"}>
+             {[0, 1, 2].map((i) => {
+               const decision = entry.state?.panel?.votes?.[i]?.decision;
+               const curUser = entry.state?.panel?.votes?.[i]?.user_id;
+               return (
+                 <Box
+                   display={"flex"}
+                   flexDirection={"column"}
+                   alignItems={"center"}
+                   key={i}
+                 > 
+    	           <Tooltip title={ curUser ? curUser : ""}>
+                     <Icon
+		       viewBox={"0 0 16 16"}
+                       size={1.5}
+                       key={i}
+                       // @ts-ignore Forwards the prop to the underlying svg
+                       color={
+                         decision === "approve" &&
+                         (userInVote || entry?.state?.mod_decision)
+                           ? theme.palette.accept.main
+                           : decision && (userInVote || entry?.state?.mod_decision)
+                             ? theme.palette.remove.main
+                             : "#888"
+                       }
+                       path={
+                         decision === "approve" &&
+                         (userInVote || entry?.state?.mod_decision)
+                           ? approvePath
+                           : decision && (userInVote || entry?.state?.mod_decision)
+                             ? removePath
+                             : decision
+                               ? filledPath
+                               : outlinePath
+                       }
+                     />
+                   </Tooltip>
+                   <Box
+                     fontSize={"13px"}
+                     marginLeft={curUser === user_id ? "2px" : "0px"}
+                     color={curUser === user_id ? "black" : "white"}
+                   >
+                     {"You"}
+                   </Box>
+                 </Box>
+               );
+             })}
+          </Box>
+        )}
+        {!curDecision && (
+          <ActionButton
+            icon={<Icon path={mdiAccountGroupOutline} size={0.7} />}
+            label={entry?.state?.panel?.is_active ? "Cancel Panel" : "Start Panel"}
             variant="outlined"
             onClick={() =>
               othersInVote && entry?.state?.panel?.is_active
                 ? openModal(ModalContent(entry, "cancel"),
-			    togglePanelStatus)
+  	                  togglePanelStatus)
                 : togglePanelStatus()
             }
             stopPropagation
           />
-        </>
-      )}
-      {curDecision && userInVote && entry?.state?.panel?.is_active && (
-        <ActionButton
-          icon={<Icon path={mdiArrowULeftTop} size={0.7} />}
-          label={"Withdraw My Vote"}
-          variant="outlined"
-          onClick={wipeMyVote}
-          stopPropagation
-        />
-      )}
-      {curDecision && !entry?.state?.panel?.is_active && (
-        <ActionButton
-          icon={<Icon path={mdiAccountGroupOutline} size={0.7} />}
-          label={"Re-open in Panel Mode"}
-          variant="outlined"
-          onClick={togglePanelStatus}
-          stopPropagation
-        />
-      )}
-      {curDecision && (
-        <ActionButton
-          icon={<Icon path={mdiArrowULeftTop} size={0.7} />}
-          label={
-            "Undo " +
-            curDecision[0].toUpperCase() +
-            curDecision.slice(1, -1) +
-            "al"
-          }
-          variant="outlined"
-          onClick={() =>
-            othersInVote
-              ? openModal(
-                  ModalContent(entry, "wipe"),
-                  wipeAllVotesAndCancelPanel,
-                )
-              : wipeAllVotesAndCancelPanel()
-          }
-          stopPropagation
-        />
-      )}
-      {entry.state?.panel?.is_active && (
-        <Box display="flex" alignItems="top">
-          {[0, 1, 2].map((i) => {
-            const decision = entry.state?.panel?.votes?.[i]?.decision;
-            const curUser = entry.state?.panel?.votes?.[i]?.user_id;
-            return (
-              <Box
-                display={"flex"}
-                flexDirection={"column"}
-                alignItems={"center"}
-                key={i}
-              > 
-	        <Tooltip title={ curUser ? curUser : ""}>
-		  <span style={{height:"2rem", width:"2.1rem"}}>
-                    <Icon
-                      size={1.6}
-                      key={i}
-                      // @ts-ignore Forwards the prop to the underlying svg
-                      color={
-                        decision === "approve" &&
-                        (userInVote || entry?.state?.mod_decision)
-                          ? theme.palette.accept.main
-                          : decision && (userInVote || entry?.state?.mod_decision)
-                            ? theme.palette.remove.main
-                            : "#888"
-                      }
-                      path={
-                        decision === "approve" &&
-                        (userInVote || entry?.state?.mod_decision)
-                          ? approvePath
-                          : decision && (userInVote || entry?.state?.mod_decision)
-                            ? removePath
-                            : decision
-                              ? filledPath
-                              : outlinePath
-                      }
-                    />
-		  </span>
-		</Tooltip>
-                <Box
-                  fontSize={"13px"}
-                  marginLeft={curUser === user_id ? "2px" : "0px"}
-                  color={curUser === user_id ? "black" : "white"}
-                >
-                  {"You"}
-                </Box>
-              </Box>
-            );
-          })}
-        </Box>
-      )}
+        )}
+      </Box>
     </Box>
   );
 };
 
-const filledPath =
-  "M13 5c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3m6 12v2H7v-2c0-2.21 2.69-4 6-4s6 1.79 6 4";
-const outlinePath =
-  "M13 11c2.673 0 4.011-3.231 2.121-5.121C13.231 3.989 10 5.327 10 8a3 3 0 003 3m0-4c.891 0 1.337 1.077.707 1.707C13.077 9.337 12 8.891 12 8a1 1 0 011-1m0 6c-6 0-6 4-6 4v2h12v-2s0-4-6-4m-4 4c0-.29.32-2 4-2 3.5 0 3.94 1.56 4 2";
-const approvePath =
-  "M19 17v2H7v-2s0-4 6-4 6 4 6 4m-3-9c0-2.673-3.231-4.011-5.121-2.121C8.989 7.769 10.327 11 13 11a3 3 0 003-3m-8.66.92l1.16 1.41-4.75 4.75-2.75-3 1.16-1.16 1.59 1.58 3.59-3.58";
-const removePath =
-  "M13 5c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3m6 12v2H7v-2c0-2.21 2.69-4 6-4s6 1.79 6 4M.464 13.12L2.59 11 .464 8.88 1.88 7.46 4 9.59l2.12-2.13 1.42 1.42L5.41 11l2.13 2.12-1.42 1.42L4 12.41l-2.12 2.13z";
+const filledPath = "M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"
+const outlinePath = "M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"
+const approvePath = "M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m1.679-4.493-1.335 2.226a.75.75 0 0 1-1.174.144l-.774-.773a.5.5 0 0 1 .708-.708l.547.548 1.17-1.951a.5.5 0 1 1 .858.514M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0 M2 13c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4"
+const removePath = "M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0m-9 8c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4 M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m-.646-4.854.646.647.646-.647a.5.5 0 0 1 .708.708l-.647.646.647.646a.5.5 0 0 1-.708.708l-.646-.647-.646.647a.5.5 0 0 1-.708-.708l.647-.646-.647-.646a.5.5 0 0 1 .708-.708"
 
 const ModalContent = (
   entry: Entry,

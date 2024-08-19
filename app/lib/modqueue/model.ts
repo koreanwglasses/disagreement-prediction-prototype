@@ -274,7 +274,7 @@ const computeDecisionFromVotes = (votes: Decision[]) => {
   const counts = _.countBy(votes);
   if (counts["approve"] >= 2) {
     return "approve";
-  } else if (counts["removes"] >= 2) {
+  } else if (counts["remove"] >= 2) {
     return "remove";
   } else {
     return null;

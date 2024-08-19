@@ -1,12 +1,11 @@
 const palette = {
   accept: {
     main: "#1ea920",
-    contrastText: "#043407",
+    contrastText: "#000000",
   },
   remove: {
     main: "#fb6041",
-    contrastText: "#551117",
+    contrastText: "#000000",
   },
 };
-
 export const theme = { palette };
