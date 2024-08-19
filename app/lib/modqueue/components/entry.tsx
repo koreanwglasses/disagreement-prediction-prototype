@@ -8,7 +8,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Tooltip
+  Tooltip,
 } from "@mui/material";
 import Icon from "@mdi/react";
 import {
@@ -49,7 +49,7 @@ export const EntryRenderer = ({ entry }: { entry: Entry }) => {
         <HeaderRenderer entry={entry} />
         <BodyRenderer entry={entry} />
         <ReportsRenderer entry={entry} />
-        <PredictionsRenderer entry={entry} includeHeader={true}/>
+        <PredictionsRenderer entry={entry} includeHeader={true} />
         <ActionsRenderer entry={entry} />
       </Box>
     </Box>
@@ -92,13 +92,14 @@ const HeaderRenderer = ({ entry }: { entry: Entry }) => {
         </Box>
       )}
       {finalDecision ? (
-	<Tooltip title={(finalDecision == "approve"
-	                 ? "Approved by "
-			 : "Removed by ")
-		        + (entry?.state?.panel?.is_active
-			    ? "panel"
-		            : entry?.state?.panel?.votes[0].user_id)
-	}>
+        <Tooltip
+          title={
+            (finalDecision == "approve" ? "Approved by " : "Removed by ") +
+            (entry?.state?.panel?.is_active
+              ? "panel"
+              : entry?.state?.panel?.votes[0].user_id)
+          }
+        >
           <Box sx={decisionMarkerStyle}>
             <Icon
               path={finalDecision == "remove" ? mdiClose : mdiCheck}
@@ -106,7 +107,7 @@ const HeaderRenderer = ({ entry }: { entry: Entry }) => {
             />
             {`${finalDecision.charAt(0).toUpperCase() + finalDecision.slice(1)}d`}
           </Box>
-	</Tooltip>
+        </Tooltip>
       ) : null}
     </Box>
   );
@@ -173,10 +174,10 @@ const ReportsRenderer = ({ entry }: { entry: Entry }) => {
 
 const PredictionsRenderer = ({
   entry,
-  includeHeader
+  includeHeader,
 }: {
-  entry: Entry,
-  includeHeader: boolean
+  entry: Entry;
+  includeHeader: boolean;
 }) => {
   const [expanded, setExpanded] = useState(false);
   const toggleAccordion: MouseEventHandler<HTMLDivElement> = (e) => {
@@ -193,9 +194,10 @@ const PredictionsRenderer = ({
         }}
         expanded={!includeHeader || expanded}
         onClick={toggleAccordion}
+        disableGutters
       >
-        { includeHeader && (
-	  <AccordionSummary
+        {includeHeader && (
+          <AccordionSummary
             expandIcon={
               <Icon
                 path={mdiChevronDown}
@@ -204,7 +206,7 @@ const PredictionsRenderer = ({
               />
             }
             sx={{ borderRadius: "4px" }}
-          > 
+          >
             <Icon
               path={mdiAccountGroup}
               size={1}
@@ -213,9 +215,9 @@ const PredictionsRenderer = ({
               style={{ flexShrink: 0 }}
             />
             <Box component="h3" fontWeight="bold" paddingLeft="8px">
-              Prediction: What would other r/CMV moderators do? 
+              Prediction: What would other r/CMV moderators do?
             </Box>
-          </AccordionSummary> 
+          </AccordionSummary>
         )}
         <AccordionDetails sx={{ width: "100%" }}>
           <PredictionScoresVisualization scores={entry.panel_predictions} />
@@ -229,9 +231,14 @@ const PredictionsRenderer = ({
           <strong>{(entry.panel_predictions.unsure * 100).toFixed(0)}%</strong>{" "}
           of moderators would act.{" "}
           {entry.panel_predictions.approve < 0.7 &&
-          entry.panel_predictions.remove < 0.7
-            ? <span>Because consensus for this case is low, <strong>we recommend starting a panel.</strong></span>
-            : ""}{" "}
+          entry.panel_predictions.remove < 0.7 ? (
+            <span>
+              Because consensus for this case is low,{" "}
+              <strong>we recommend starting a panel.</strong>
+            </span>
+          ) : (
+            ""
+          )}{" "}
         </AccordionDetails>
       </Accordion>
     )
@@ -426,17 +433,25 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
   };
 
   const curDecision = entry?.state?.mod_decision;
-  const uncertain = (entry.panel_predictions.remove < 0.8 &&
-		     entry.panel_predictions.approve < 0.8)
+  const uncertain =
+    entry.panel_predictions.remove < 0.8 &&
+    entry.panel_predictions.approve < 0.8;
 
   return (
-    <Box display="flex" gap={1.5} alignItems={"start"} justifyContent={"space-between"}>
+    <Box
+      display="flex"
+      gap={1.5}
+      alignItems={"start"}
+      justifyContent={"space-between"}
+    >
       <Box display="flex" gap={1.5} alignItems={"start"}>
         {!curDecision && (
           <>
             <ActionButton
               icon={<Icon path={mdiCheck} size={0.7} />}
-              label={entry?.state?.panel?.is_active ? "Vote for Approval" : "Approve"}
+              label={
+                entry?.state?.panel?.is_active ? "Vote for Approval" : "Approve"
+              }
               variant={
                 userInVote && userVote?.[0].decision === "approve"
                   ? "filled"
@@ -447,15 +462,18 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
                 userInVote && userVote?.[0].decision === "approve"
                   ? wipeMyVote()
                   : uncertain && !entry?.state?.panel?.is_active
-	      	    ? openModal(ModalContent(entry, "approve"),
-		       	        ()=>submitDecision("approve") )
-   	 	    : submitDecision("approve")
+                    ? openModal(ModalContent(entry, "approve"), () =>
+                        submitDecision("approve"),
+                      )
+                    : submitDecision("approve");
               }}
               stopPropagation
             />
             <ActionButton
               icon={<Icon path={mdiClose} size={0.7} />}
-              label={entry?.state?.panel?.is_active ? "Vote for Removal" : "Remove"}
+              label={
+                entry?.state?.panel?.is_active ? "Vote for Removal" : "Remove"
+              }
               variant={
                 userInVote && userVote?.[0].decision === "remove"
                   ? "filled"
@@ -466,9 +484,10 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
                 userInVote && userVote?.[0].decision === "remove"
                   ? wipeMyVote()
                   : uncertain && !entry?.state?.panel?.is_active
-		    ? openModal(ModalContent(entry, "remove"),
-  			        ()=>submitDecision("remove"))
-  		    : submitDecision("remove")
+                    ? openModal(ModalContent(entry, "remove"), () =>
+                        submitDecision("remove"),
+                      )
+                    : submitDecision("remove");
               }}
               stopPropagation
             />
@@ -517,63 +536,66 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
       <Box display="flex" gap={5} alignItems={"start"}>
         {entry.state?.panel?.is_active && (
           <Box display="flex" gap={0.5} alignItems={"start"}>
-             {[0, 1, 2].map((i) => {
-               const decision = entry.state?.panel?.votes?.[i]?.decision;
-               const curUser = entry.state?.panel?.votes?.[i]?.user_id;
-               return (
-                 <Box
-                   display={"flex"}
-                   flexDirection={"column"}
-                   alignItems={"center"}
-                   key={i}
-                 > 
-    	           <Tooltip title={ curUser ? curUser : ""}>
-                     <Icon
-		       viewBox={"0 0 16 16"}
-                       size={1.5}
-                       key={i}
-                       // @ts-ignore Forwards the prop to the underlying svg
-                       color={
-                         decision === "approve" &&
-                         (userInVote || entry?.state?.mod_decision)
-                           ? theme.palette.accept.main
-                           : decision && (userInVote || entry?.state?.mod_decision)
-                             ? theme.palette.remove.main
-                             : "#888"
-                       }
-                       path={
-                         decision === "approve" &&
-                         (userInVote || entry?.state?.mod_decision)
-                           ? approvePath
-                           : decision && (userInVote || entry?.state?.mod_decision)
-                             ? removePath
-                             : decision
-                               ? filledPath
-                               : outlinePath
-                       }
-                     />
-                   </Tooltip>
-                   <Box
-                     fontSize={"13px"}
-                     marginLeft={curUser === user_id ? "2px" : "0px"}
-                     color={curUser === user_id ? "black" : "white"}
-                   >
-                     {"You"}
-                   </Box>
-                 </Box>
-               );
-             })}
+            {[0, 1, 2].map((i) => {
+              const decision = entry.state?.panel?.votes?.[i]?.decision;
+              const curUser = entry.state?.panel?.votes?.[i]?.user_id;
+              return (
+                <Box
+                  display={"flex"}
+                  flexDirection={"column"}
+                  alignItems={"center"}
+                  key={i}
+                >
+                  <Tooltip title={curUser ? curUser : ""}>
+                    <Icon
+                      viewBox={"0 0 16 16"}
+                      size={1.5}
+                      key={i}
+                      // @ts-ignore Forwards the prop to the underlying svg
+                      color={
+                        decision === "approve" &&
+                        (userInVote || entry?.state?.mod_decision)
+                          ? theme.palette.accept.main
+                          : decision &&
+                              (userInVote || entry?.state?.mod_decision)
+                            ? theme.palette.remove.main
+                            : "#888"
+                      }
+                      path={
+                        decision === "approve" &&
+                        (userInVote || entry?.state?.mod_decision)
+                          ? approvePath
+                          : decision &&
+                              (userInVote || entry?.state?.mod_decision)
+                            ? removePath
+                            : decision
+                              ? filledPath
+                              : outlinePath
+                      }
+                    />
+                  </Tooltip>
+                  <Box
+                    fontSize={"13px"}
+                    marginLeft={curUser === user_id ? "2px" : "0px"}
+                    color={curUser === user_id ? "black" : "white"}
+                  >
+                    {"You"}
+                  </Box>
+                </Box>
+              );
+            })}
           </Box>
         )}
         {!curDecision && (
           <ActionButton
             icon={<Icon path={mdiAccountGroupOutline} size={0.7} />}
-            label={entry?.state?.panel?.is_active ? "Cancel Panel" : "Start Panel"}
+            label={
+              entry?.state?.panel?.is_active ? "Cancel Panel" : "Start Panel"
+            }
             variant="outlined"
             onClick={() =>
               othersInVote && entry?.state?.panel?.is_active
-                ? openModal(ModalContent(entry, "cancel"),
-  	                  togglePanelStatus)
+                ? openModal(ModalContent(entry, "cancel"), togglePanelStatus)
                 : togglePanelStatus()
             }
             stopPropagation
@@ -584,10 +606,14 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
   );
 };
 
-const filledPath = "M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"
-const outlinePath = "M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"
-const approvePath = "M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m1.679-4.493-1.335 2.226a.75.75 0 0 1-1.174.144l-.774-.773a.5.5 0 0 1 .708-.708l.547.548 1.17-1.951a.5.5 0 1 1 .858.514M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0 M2 13c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4"
-const removePath = "M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0m-9 8c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4 M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m-.646-4.854.646.647.646-.647a.5.5 0 0 1 .708.708l-.647.646.647.646a.5.5 0 0 1-.708.708l-.646-.647-.646.647a.5.5 0 0 1-.708-.708l.647-.646-.647-.646a.5.5 0 0 1 .708-.708"
+const filledPath =
+  "M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6";
+const outlinePath =
+  "M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z";
+const approvePath =
+  "M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m1.679-4.493-1.335 2.226a.75.75 0 0 1-1.174.144l-.774-.773a.5.5 0 0 1 .708-.708l.547.548 1.17-1.951a.5.5 0 1 1 .858.514M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0 M2 13c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4";
+const removePath =
+  "M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0m-9 8c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4 M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m-.646-4.854.646.647.646-.647a.5.5 0 0 1 .708.708l-.647.646.647.646a.5.5 0 0 1-.708.708l-.646-.647-.646.647a.5.5 0 0 1-.708-.708l.647-.646-.647-.646a.5.5 0 0 1 .708-.708";
 
 const ModalContent = (
   entry: Entry,
@@ -628,10 +654,15 @@ const ModalContent = (
         " via panel. If you proceed, you will erase all existing votes on the panel, including those made by other moderators.";
     }
   } else if (action === "approve" || action === "remove") {
-    if (entry.panel_predictions.remove < .7 &&  entry.panel_predictions.approve < .7) {
+    if (
+      entry.panel_predictions.remove < 0.7 &&
+      entry.panel_predictions.approve < 0.7
+    ) {
       returnObj.name = "uncertain/" + action;
-      returnObj.actionDesc = action
-      returnObj.body = <PredictionsRenderer entry={entry} includeHeader={false}/>
+      returnObj.actionDesc = action;
+      returnObj.body = (
+        <PredictionsRenderer entry={entry} includeHeader={false} />
+      );
     }
   }
   return returnObj;

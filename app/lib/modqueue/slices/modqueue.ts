@@ -30,7 +30,9 @@ export const wipeAllVotes = createAsyncThunk(
   "entries/wipeAllVotes",
   (args: Parameters<typeof Model.wipeAllVotes>[0]) => Model.wipeAllVotes(args),
 );
+
 ///// Create slice
+
 const initialState = {
   entries: [] as Entry[],
   user_id: "XXXXX",

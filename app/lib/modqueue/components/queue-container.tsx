@@ -3,7 +3,7 @@
 import { ContextViewer } from "@/lib/modqueue/components/context-viewer";
 import { EntryRenderer } from "@/lib/modqueue/components/entry";
 import { ToolbarRenderer } from "@/lib/modqueue/components/toolbar";
-import { Box, CircularProgress } from "@mui/material";
+import { Box, CircularProgress, Collapse, Fade } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../reducers";
 import { fetchEntries } from "../slices/modqueue";
@@ -12,6 +12,7 @@ import { useAsync } from "react-use";
 import type { Entry } from "../model";
 import { ConfirmationModal } from "./confirmation-modal";
 import { Flex, FlexCol } from "@/lib/components/styled";
+import { TransitionGroup } from "react-transition-group";
 
 export const QueueContainer = () => {
   const dispatch = useAppDispatch();
@@ -25,9 +26,27 @@ export const QueueContainer = () => {
 
   // Get list of entries from global state
   const entries = useAppSelector((state) => state.modqueue.entries);
-  const { completionMode, panelMode, myCasesOnly} = useAppSelector(
+  const { completionMode, panelMode, myCasesOnly } = useAppSelector(
     (state) => state.queueContainer,
   );
+
+  // Filter for just the entries to show
+  const entriesToShow = entries.filter(
+    (entry) =>
+      (completionMode === "Open Cases") ===
+        _.isNil(entry.state?.mod_decision) &&
+      (panelMode === "Panel/Non-Panel Cases" ||
+        (panelMode === "Panel Cases Only") ===
+          !!entry.state?.panel?.is_active) &&
+      (!myCasesOnly ||
+        entry?.state?.panel?.votes
+          ?.map((vote) => vote.user_id)
+          .includes(user_id)),
+  );
+
+  // Key for disabling transitions when switching filtering criteria
+  const entriesFilterKey = `${completionMode}--${panelMode}--${myCasesOnly}`;
+
   return (
     <>
       <Flex>
@@ -45,23 +64,19 @@ export const QueueContainer = () => {
         >
           <ToolbarRenderer />
           <Box sx={{ overflowY: "auto" }}>
-            <Box>
-              {entries
-                .filter(
-                  (entry) =>
-                    ((completionMode === "Open Cases") ===
-                      _.isNil(entry.state?.mod_decision)) &&
-                    ((panelMode === "Panel/Non-Panel Cases" ||
-                      (panelMode === "Panel Cases Only") ===
-                        !!entry.state?.panel?.is_active)) &&
-		    ((!myCasesOnly) ||
-		        entry?.state?.panel?.votes?.map((vote) => vote.user_id).includes(user_id)
-		    )
-                )
-                .map((entry) => (
-                  <EntryRenderer entry={entry} key={entry.id} />
-                ))}
-            </Box>
+            <TransitionGroup>
+              <Fade key={entriesFilterKey} timeout={0}>
+                <Box>
+                  <TransitionGroup>
+                    {entriesToShow.map((entry) => (
+                      <Collapse key={entry.id}>
+                        <EntryRenderer entry={entry} />
+                      </Collapse>
+                    ))}
+                  </TransitionGroup>
+                </Box>
+              </Fade>
+            </TransitionGroup>
             {status.loading && (
               <Box width="100%" textAlign="center" mt={1}>
                 <CircularProgress />
