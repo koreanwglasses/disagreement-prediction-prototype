@@ -47,7 +47,7 @@ docker compose -f docker-compose-prod.yml up -d; docker compose -f docker-compos
 **Hard reset.** Restore the internal database to the initial state and restarts the server.
 
 ```sh
-docker compose -f docker-compose-prod.yml down -v; docker compose -f docker-compose-prod.yml up -d; docker compose -f docker-compose-prod.yml logs -f app db
+docker compose -f docker-compose-prod.yml down -v; docker compose -f docker-compose-prod.yml up --build -d; docker compose -f docker-compose-prod.yml logs -f app db
 ```
 
 # Important Files
