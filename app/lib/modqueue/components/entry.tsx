@@ -1,7 +1,7 @@
 "use client";
 
 import type { Entry } from "../model";
-import { MouseEventHandler, useState } from "react";
+import { MouseEventHandler, ReactNode, useState } from "react";
 import {
   Avatar,
   Box,
@@ -548,10 +548,10 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
                 >
                   <Tooltip title={curUser ? curUser : ""}>
                     <Icon
+                      // @ts-ignore Forwards the prop to the underlying svg
                       viewBox={"0 0 16 16"}
                       size={1.5}
                       key={i}
-                      // @ts-ignore Forwards the prop to the underlying svg
                       color={
                         decision === "approve" &&
                         (userInVote || entry?.state?.mod_decision)
@@ -619,7 +619,12 @@ const ModalContent = (
   entry: Entry,
   action: string,
 ): Omit<ModalState, "actionFunction"> => {
-  const returnObj = { open: true, name: "", actionDesc: "", body: "" };
+  const returnObj = {
+    open: true,
+    name: "",
+    actionDesc: "",
+    body: "" as ReactNode,
+  };
   if (action == "cancel") {
     returnObj.name = "cancel/wipe";
     returnObj.actionDesc = "cancel panel";
@@ -634,7 +639,7 @@ const ModalContent = (
     if (entry?.state?.mod_decision == "remove") {
       returnObj.name = "cancel/visible";
       returnObj.body =
-        returnObj.body.slice(0, -1) +
+        (returnObj.body as string).slice(0, -1) +
         ", and the comment will become visible to users again.";
     }
   } else if (action === "wipe") {

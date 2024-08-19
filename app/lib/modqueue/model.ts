@@ -28,7 +28,7 @@ interface EntryModel {
   };
   is_op?: number;
 
-  panel_predictions?: { approve: number; remove: number; unsure: number };
+  panel_predictions: { approve: number; remove: number; unsure: number };
 }
 
 interface EntryStateModel {
@@ -164,9 +164,8 @@ export const wipeMyVote = async ({
   const key = { entry_id: ObjectId.createFromHexString(entry_id), context_id };
   const collection = await getEntryStatesCollection();
   const currentState = await collection.findOne(key);
-  let new_votes = currentState.panel.votes.filter(
-    (elem) => elem.user_id != user_id,
-  );
+  let new_votes =
+    currentState?.panel?.votes.filter((elem) => elem.user_id != user_id) ?? [];
   let new_vote_decisions = new_votes.map((elem) => elem.decision);
   let new_decision = computeDecisionFromVotes(new_vote_decisions);
   let set = { mod_decision: new_decision, "panel.votes": new_votes };
@@ -182,7 +181,7 @@ export const wipeAllVotes = async ({
 }) => {
   const key = { entry_id: ObjectId.createFromHexString(entry_id), context_id };
   const collection = await getEntryStatesCollection();
-  let set = { mod_decision: null, "panel.votes": []};
+  let set = { mod_decision: null, "panel.votes": [] };
   await collection.updateOne(key, { $set: set }, { upsert: true });
   return cleanEntryState(await collection.findOne(key));
 };
@@ -270,7 +269,7 @@ const cleanEntryState = (
 
 /// Helper function to compute the correct decision based on current vote state
 
-const computeDecisionFromVotes = (votes: Decision[]) => {
+const computeDecisionFromVotes = (votes: Decision[]): Decision | null => {
   const counts = _.countBy(votes);
   if (counts["approve"] >= 2) {
     return "approve";
@@ -298,7 +297,7 @@ const fillMockData = (entries: Entry[]) => {
       post_author_name,
       parent_author_name,
       panel_predictions: generatePanelPrediction(entry),
-      ...entry,
+      ...(entry as Partial<Entry>),
     } as Entry;
   });
 };

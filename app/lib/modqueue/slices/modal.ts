@@ -1,4 +1,5 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { ReactNode } from "react";
 
 export interface ModalState {
   open: boolean;
@@ -8,7 +9,7 @@ export interface ModalState {
    * been disabled by the user. */
   name: string;
   actionDesc: string;
-  body: string;
+  body: ReactNode;
   actionFunction: () => void;
 }
 
