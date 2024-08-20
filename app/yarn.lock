@@ -1114,6 +1114,7 @@ __metadata:
     react-redux: "npm:^9.1.2"
     react-transition-group: "npm:^4.4.5"
     react-use: "npm:^17.5.1"
+    react-virtuoso: "npm:^4.10.1"
     string-hash: "npm:^1.1.3"
     tailwindcss: "npm:^3.4.1"
     typescript: "npm:^5"
@@ -4163,6 +4164,16 @@ __metadata:
     react: "*"
     react-dom: "*"
   checksum: 10c0/3d6a8f46539b32698d31600239e72b5c23376a5343d0d687c6520e14532ed7f5c72c9b99d222be4eeacb0401ce3ae763d5648d0476440c8b4a6afbd56dc98bfa
+  languageName: node
+  linkType: hard
+
+"react-virtuoso@npm:^4.10.1":
+  version: 4.10.1
+  resolution: "react-virtuoso@npm:4.10.1"
+  peerDependencies:
+    react: ">=16 || >=17 || >= 18"
+    react-dom: ">=16 || >=17 || >= 18"
+  checksum: 10c0/a7fed75fd73d2d3425ee252548e878aa0dec4230f7c34e08967e618d273a06647c546cbbd19bc1253541cd9d2804e1b764039a51588ce2a5949c50812b20684f
   languageName: node
   linkType: hard
 

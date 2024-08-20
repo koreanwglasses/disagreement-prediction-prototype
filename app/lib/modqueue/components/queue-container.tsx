@@ -4,16 +4,17 @@ import { ContextViewer } from "@/lib/modqueue/components/context-viewer";
 import { EntryRenderer } from "@/lib/modqueue/components/entry";
 import { ToolbarRenderer } from "@/lib/modqueue/components/toolbar";
 import { Box, CircularProgress, Collapse, Fade, Snackbar } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../reducers";
 import { fetchEntries } from "../slices/modqueue";
 import _ from "lodash";
-import { useAsync } from "react-use";
+import { useAsync, useMeasure } from "react-use";
 import type { Entry } from "../model";
 import { ConfirmationModal } from "./confirmation-modal";
 import { Flex, FlexCol } from "@/lib/components/styled";
 import * as snackBarSlice from "../slices/snackbar";
 import { TransitionGroup } from "react-transition-group";
+import { Virtuoso } from "react-virtuoso";
 
 export const QueueContainer = () => {
   const dispatch = useAppDispatch();
@@ -44,6 +45,10 @@ export const QueueContainer = () => {
       entry?.state?.panel?.votes
         ?.map((vote) => vote.user_id)
         .includes(user_id));
+  const entriesToShow = entries.filter(shouldShowEntry);
+
+  // Used for sizing the virtualized list
+  const [listContainerRef, listContainerRect] = useMeasure();
 
   return (
     <>
@@ -60,21 +65,14 @@ export const QueueContainer = () => {
           }}
         >
           <ToolbarRenderer />
-          <Box sx={{ overflowY: "auto" }}>
-            <Box>
-              {entries.map((entry) => (
-                <Box
-                  key={entry.id}
-                  sx={
-                    shouldShowEntry(entry)
-                      ? {}
-                      : { visibility: "hidden", height: 0, overflow: "hidden" }
-                  }
-                >
-                  <EntryRenderer entry={entry} />
-                </Box>
-              ))}
-            </Box>
+          <Box sx={{ overflowY: "auto" }} ref={listContainerRef}>
+            <Virtuoso
+              style={{ height: listContainerRect.height }}
+              totalCount={entriesToShow.length}
+              itemContent={(index) => (
+                <EntryRenderer entry={entriesToShow[index]} />
+              )}
+            />
             {status.loading && (
               <Box width="100%" textAlign="center" mt={1}>
                 <CircularProgress />
