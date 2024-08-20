@@ -32,8 +32,7 @@ export const modalSlice = createSlice({
       state.actionDesc = action.payload.actionDesc;
       state.body = action.payload.body;
       state.actionFunction = action.payload.actionFunction;
-
-      if (!state.disabledModals[state.name]) state.open = true;
+      if (!state.disabledModals[state.name]) state.open=true
     },
     closeModal(state) {
       state.open = false;
