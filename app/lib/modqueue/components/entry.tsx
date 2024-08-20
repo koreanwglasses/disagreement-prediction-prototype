@@ -1,6 +1,6 @@
 "use client";
 
-import type { Entry } from "../model";
+import type { Entry, EntryState } from "../model";
 import { MouseEventHandler, ReactNode, useState } from "react";
 import {
   Avatar,
@@ -374,51 +374,39 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
       }),
     ).unwrap();
   };
-  const snackWrap = (func) => {
-    return () => {
+  const snackWrap = (func: () => Promise<EntryState | null>) => {
+    return async () => {
       console.log("in the wrap");
-      let preValue = entry?.state?.mod_decision;
-      let promise = func()
-        .then((value) => {
-          let postValue = value?.mod_decision;
-          let postPanel = value?.panel?.is_active;
-          let postVotes = value?.panel?.votes?.map(
-            (cur_entry) => cur_entry.decision,
-          );
-          let voteCounts = _.countBy(postVotes);
-          if (preValue != postValue) {
-            let newSnackBarText = ["Case", "", ""];
-            newSnackBarText[1] = !postValue
-              ? "Re-opened"
-              : postValue == "approve"
-                ? "Resolved - Approved"
-                : "Resolved - Removed";
-            newSnackBarText[2] = postPanel
-              ? "(Votes: " +
-                (voteCounts?.approve ? voteCounts.approve.toString() : "0") +
-                " Approve, " +
-                (voteCounts?.remove ? voteCounts.remove.toString() : "0") +
-                " Remove)"
-              : "";
-            return newSnackBarText;
-          } else {
-            return [""];
-          }
-        })
-        .then((value) =>
-          value[0] != ""
-            ? dispatch(
-                snackBarSlice.setSnackBarText({
-                  snackBarText: value.join(" "),
-                }),
-              )
-            : -1,
-        )
-        .then((value) =>
-          value != -1
-            ? dispatch(snackBarSlice.setSnackBarOpen({ snackBarOpen: true }))
-            : -1,
-        );
+      const preValue = entry?.state?.mod_decision;
+      const entryState = await func();
+      const postValue = entryState?.mod_decision;
+      const postPanel = entryState?.panel?.is_active;
+      const postVotes = entryState?.panel?.votes?.map(
+        (cur_entry) => cur_entry.decision,
+      );
+      const voteCounts = _.countBy(postVotes);
+      if (preValue == postValue) return;
+
+      const newSnackBarText = ["Case", "", ""];
+      newSnackBarText[1] = !postValue
+        ? "Re-opened"
+        : postValue == "approve"
+          ? "Resolved - Approved"
+          : "Resolved - Removed";
+      newSnackBarText[2] = postPanel
+        ? "(Votes: " +
+          (voteCounts?.approve ? voteCounts.approve.toString() : "0") +
+          " Approve, " +
+          (voteCounts?.remove ? voteCounts.remove.toString() : "0") +
+          " Remove)"
+        : "";
+
+      dispatch(
+        snackBarSlice.setSnackBarText({
+          snackBarText: newSnackBarText.join(" "),
+        }),
+      );
+      dispatch(snackBarSlice.setSnackBarOpen({ snackBarOpen: true }));
     };
   };
   const submitDecision = (decision: "approve" | "remove") => {

@@ -7,20 +7,13 @@ export const snackBarSlice = createSlice({
     snackBarText: "",
   },
   reducers: {
-    setSnackBarOpen(
-      state,
-      action: PayloadAction<boolean>,
-    ) {
+    setSnackBarOpen(state, action: PayloadAction<{ snackBarOpen: boolean }>) {
       state.snackBarOpen = action.payload.snackBarOpen;
     },
-    setSnackBarText(
-      state,
-      action: PayloadAction<string>,
-    ) {
+    setSnackBarText(state, action: PayloadAction<{ snackBarText: string }>) {
       state.snackBarText = action.payload.snackBarText;
     },
   },
 });
 
-export const { setSnackBarOpen, setSnackBarText } =
-  snackBarSlice.actions;
+export const { setSnackBarOpen, setSnackBarText } = snackBarSlice.actions;

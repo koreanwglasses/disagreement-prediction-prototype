@@ -31,15 +31,19 @@ export const ToolbarRenderer = () => {
       <Box sx={{ fontSize: 30, fontWeight: "semi-bold" }}>Mod Queue</Box>
       <Box
         display="flex"
-       	flexDirection="row"
-       	sx={{ justifyContent: "space-between", paddingLeft: "20px", paddingRight: "20px"}}
+        flexDirection="row"
+        sx={{
+          justifyContent: "space-between",
+          paddingLeft: "20px",
+          paddingRight: "20px",
+        }}
       >
         <QueueTabs
           modes={completionModes}
           activeMode={completionMode}
           setActiveMode={queueTabEffect}
         />
-	<Box display="flex" flexDirection="row" sx={{gap: 5}}>
+        <Box display="flex" flexDirection="row" sx={{ gap: 5 }}>
           <QueueDropdown
             modes={panelModes}
             activeMode={panelMode}
@@ -50,7 +54,7 @@ export const ToolbarRenderer = () => {
             isChecked={myCasesOnly}
             toggleMode={() => dispatch(setMyCasesOnly(!myCasesOnly))}
           />
-	</Box>
+        </Box>
       </Box>
     </Box>
   );
