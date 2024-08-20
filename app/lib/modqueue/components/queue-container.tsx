@@ -12,7 +12,7 @@ import { useAsync } from "react-use";
 import type { Entry } from "../model";
 import { ConfirmationModal } from "./confirmation-modal";
 import { Flex, FlexCol } from "@/lib/components/styled";
-import * as snackBarSlice from "../slices/snackbar"
+import * as snackBarSlice from "../slices/snackbar";
 import { TransitionGroup } from "react-transition-group";
 
 export const QueueContainer = () => {
@@ -31,7 +31,7 @@ export const QueueContainer = () => {
   const { completionMode, panelMode, myCasesOnly } = useAppSelector(
     (state) => state.queueContainer,
   );
-  const {snackBarOpen, snackBarText} = useAppSelector(
+  const { snackBarOpen, snackBarText } = useAppSelector(
     (state) => state.snackBar,
   );
 
@@ -68,19 +68,11 @@ export const QueueContainer = () => {
         >
           <ToolbarRenderer />
           <Box sx={{ overflowY: "auto" }}>
-            <TransitionGroup>
-              <Fade key={entriesFilterKey} timeout={0}>
-                <Box>
-                  <TransitionGroup>
-                    {entriesToShow.map((entry) => (
-                      <Collapse key={entry.id}>
-                        <EntryRenderer entry={entry} />
-                      </Collapse>
-                    ))}
-                  </TransitionGroup>
-                </Box>
-              </Fade>
-            </TransitionGroup>
+            <Box>
+              {entriesToShow.map((entry) => (
+                <EntryRenderer entry={entry} key={entry.id} />
+              ))}
+            </Box>
             {status.loading && (
               <Box width="100%" textAlign="center" mt={1}>
                 <CircularProgress />
@@ -102,9 +94,11 @@ export const QueueContainer = () => {
       <ConfirmationModal />
       <Snackbar
         open={snackBarOpen}
-	message={snackBarText}
-	autoHideDuration={4000}
-	onClose={()=>dispatch(snackBarSlice.setSnackBarOpen({snackBarOpen: false}))}
+        message={snackBarText}
+        autoHideDuration={4000}
+        onClose={() =>
+          dispatch(snackBarSlice.setSnackBarOpen({ snackBarOpen: false }))
+        }
       />
     </>
   );
