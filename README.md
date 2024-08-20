@@ -8,7 +8,7 @@
 docker compose up -d; docker compose logs -f app
 ```
 
-**Connecting to the app.** You should be able to access the application through your browser at `http://localhost:3000/modqueue`. Additionally, you should be able to access a view of the database at `http://localhost:8082`. 
+**Connecting to the app.** You should be able to access the application through your browser at `http://localhost:3000/modqueue`. Additionally, you should be able to access a view of the database at `http://localhost:8082`.
 
 **Taking down the stack.** Be sure the run the following command when you are done. This will stop all containers and will preserve the database between sessions.
 
@@ -38,10 +38,10 @@ docker compose down -v; docker compose up -d; docker compose logs -f app db
 docker compose -f docker-compose-prod.yml build
 ```
 
-**Start in production mode.** Start the container in production mode. Useful when running on a dedicated server. 
+**(Re)Build and start in production mode.** Build and start the container in production mode. Does not reset the volumes.
 
 ```sh
-docker compose -f docker-compose-prod.yml up -d; docker compose -f docker-compose-prod.yml logs -f app
+docker compose -f docker-compose-prod.yml up --build -d; docker compose -f docker-compose-prod.yml logs -f app
 ```
 
 **Hard reset.** Restore the internal database to the initial state and restarts the server.
@@ -57,6 +57,3 @@ docker compose -f docker-compose-prod.yml down -v; docker compose -f docker-comp
 `./app/lib/components/modqueue/entry.tsx` - Component for rendering a single entry in the modqueue
 
 `./app/lib/models/modqueue/entries.ts` - Backend model for accessing and updating entries in the modqueue
-
-
-
