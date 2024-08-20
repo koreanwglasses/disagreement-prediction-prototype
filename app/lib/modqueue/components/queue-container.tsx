@@ -36,21 +36,14 @@ export const QueueContainer = () => {
   );
 
   // Filter for just the entries to show
-  const entriesToShow = entries.filter(
-    (entry) =>
-      (completionMode === "Open Cases") ===
-        _.isNil(entry.state?.mod_decision) &&
-      (panelMode === "Panel/Non-Panel Cases" ||
-        (panelMode === "Panel Cases Only") ===
-          !!entry.state?.panel?.is_active) &&
-      (!myCasesOnly ||
-        entry?.state?.panel?.votes
-          ?.map((vote) => vote.user_id)
-          .includes(user_id)),
-  );
-
-  // Key for disabling transitions when switching filtering criteria
-  const entriesFilterKey = `${completionMode}--${panelMode}--${myCasesOnly}`;
+  const shouldShowEntry = (entry: Entry) =>
+    (completionMode === "Open Cases") === _.isNil(entry.state?.mod_decision) &&
+    (panelMode === "Panel/Non-Panel Cases" ||
+      (panelMode === "Panel Cases Only") === !!entry.state?.panel?.is_active) &&
+    (!myCasesOnly ||
+      entry?.state?.panel?.votes
+        ?.map((vote) => vote.user_id)
+        .includes(user_id));
 
   return (
     <>
@@ -69,8 +62,17 @@ export const QueueContainer = () => {
           <ToolbarRenderer />
           <Box sx={{ overflowY: "auto" }}>
             <Box>
-              {entriesToShow.map((entry) => (
-                <EntryRenderer entry={entry} key={entry.id} />
+              {entries.map((entry) => (
+                <Box
+                  key={entry.id}
+                  sx={
+                    shouldShowEntry(entry)
+                      ? {}
+                      : { visibility: "hidden", height: 0, overflow: "hidden" }
+                  }
+                >
+                  <EntryRenderer entry={entry} />
+                </Box>
               ))}
             </Box>
             {status.loading && (
