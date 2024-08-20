@@ -9,7 +9,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Tooltip,
-  Snackbar
+  Snackbar,
 } from "@mui/material";
 import Icon from "@mdi/react";
 import {
@@ -30,8 +30,9 @@ import * as snackBarSlice from "../slices/snackbar";
 import { setContextViewerEntry } from "../slices/context-viewer";
 import { ModalState } from "../slices/modal";
 import { theme } from "../../theme";
+import React from "react";
 
-export const EntryRenderer = ({ entry }: { entry: Entry }) => {
+const _EntryRenderer = ({ entry }: { entry: Entry }) => {
   const dispatch = useAppDispatch();
   return (
     <Box
@@ -57,6 +58,8 @@ export const EntryRenderer = ({ entry }: { entry: Entry }) => {
     </Box>
   );
 };
+
+export const EntryRenderer = React.memo(_EntryRenderer);
 
 const HeaderRenderer = ({ entry }: { entry: Entry }) => {
   const finalDecision = entry.state?.mod_decision;
@@ -370,42 +373,54 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
         context_id,
       }),
     ).unwrap();
-  }
+  };
   const snackWrap = (func) => {
     return () => {
-      console.log("in the wrap")
-      let preValue = entry?.state?.mod_decision
-      let promise = func().then( (value) => {
-        let postValue = value?.mod_decision;
-        let postPanel = value?.panel?.is_active;
-        let postVotes = value?.panel?.votes?.map( (cur_entry) => cur_entry.decision );
-        let voteCounts = _.countBy(postVotes);
-        if (preValue != postValue) {
-  	  let newSnackBarText = ["Case", "", ""]
- 	  newSnackBarText[1] = !postValue 
-	                         ? "Re-opened"
-	  	                 : (postValue == "approve")	       
-		  	           ? "Resolved - Approved"
-			  	   : "Resolved - Removed"
-          newSnackBarText[2] = postPanel
-  	                         ? "(Votes: " + (voteCounts?.approve ? voteCounts.approve.toString() : "0") +  " Approve, " + (voteCounts?.remove ? voteCounts.remove.toString() : "0") + " Remove)"
-	  	  	         : ""
-	   return newSnackBarText
-	} else{
-	  return [""]
-	}
-      
-      }).then(
-       	  (value) => value[0] != ""
-	       ? dispatch(snackBarSlice.setSnackBarText({snackBarText:value.join(" ")}))
-	       : -1
-        ).then(
-	  (value) => value != -1 
-             ? dispatch(snackBarSlice.setSnackBarOpen({snackBarOpen:true}))
-	     : -1
-       );
-    }
-  }
+      console.log("in the wrap");
+      let preValue = entry?.state?.mod_decision;
+      let promise = func()
+        .then((value) => {
+          let postValue = value?.mod_decision;
+          let postPanel = value?.panel?.is_active;
+          let postVotes = value?.panel?.votes?.map(
+            (cur_entry) => cur_entry.decision,
+          );
+          let voteCounts = _.countBy(postVotes);
+          if (preValue != postValue) {
+            let newSnackBarText = ["Case", "", ""];
+            newSnackBarText[1] = !postValue
+              ? "Re-opened"
+              : postValue == "approve"
+                ? "Resolved - Approved"
+                : "Resolved - Removed";
+            newSnackBarText[2] = postPanel
+              ? "(Votes: " +
+                (voteCounts?.approve ? voteCounts.approve.toString() : "0") +
+                " Approve, " +
+                (voteCounts?.remove ? voteCounts.remove.toString() : "0") +
+                " Remove)"
+              : "";
+            return newSnackBarText;
+          } else {
+            return [""];
+          }
+        })
+        .then((value) =>
+          value[0] != ""
+            ? dispatch(
+                snackBarSlice.setSnackBarText({
+                  snackBarText: value.join(" "),
+                }),
+              )
+            : -1,
+        )
+        .then((value) =>
+          value != -1
+            ? dispatch(snackBarSlice.setSnackBarOpen({ snackBarOpen: true }))
+            : -1,
+        );
+    };
+  };
   const submitDecision = (decision: "approve" | "remove") => {
     return dispatch(
       modqueueSlice.submitDecision({
@@ -415,7 +430,7 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
         user_id,
       }),
     ).unwrap();
-  }
+  };
   const wipeMyVote = () => {
     return dispatch(
       modqueueSlice.wipeMyVote({
@@ -424,20 +439,20 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
         context_id,
       }),
     ).unwrap();
-  }
+  };
   const wipeAllVotesAndCancelPanel = () => {
     dispatch(
       modqueueSlice.wipeAllVotes({
         entry_id: entry.id,
         context_id,
       }),
-    ).unwrap()
+    ).unwrap();
     return dispatch(
       modqueueSlice.updatePanelState({
         entry_id: entry.id,
         is_active: false,
         context_id,
-      })
+      }),
     ).unwrap();
   };
   const userInVote = entry?.state?.panel?.votes?.some(
@@ -451,7 +466,6 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
   const userVote = entry?.state?.panel?.votes?.filter(
     (elem) => elem.user_id === user_id,
   );
-
 
   const openModal = (
     newModalContent: Omit<ModalState, "actionFunction">,
@@ -472,8 +486,9 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
   };
 
   const curDecision = entry?.state?.mod_decision;
-  const uncertain = (entry.panel_predictions.remove < 0.8) &&
-	  (entry.panel_predictions.approve < 0.8)
+  const uncertain =
+    entry.panel_predictions.remove < 0.8 &&
+    entry.panel_predictions.approve < 0.8;
   return (
     <Box
       display="flex"
@@ -497,11 +512,13 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
               palette={theme.palette.accept}
               onClick={() => {
                 userInVote && userVote?.[0].decision === "approve"
-                  ? snackWrap( () => wipeMyVote() )()
+                  ? snackWrap(() => wipeMyVote())()
                   : uncertain && !entry?.state?.panel?.is_active
-	      	    ? openModal(ModalContent(entry, "approve"),
-		       	        snackWrap(()=>submitDecision("approve")) )
-   	 	    : snackWrap( () => submitDecision("approve") )()
+                    ? openModal(
+                        ModalContent(entry, "approve"),
+                        snackWrap(() => submitDecision("approve")),
+                      )
+                    : snackWrap(() => submitDecision("approve"))();
               }}
               stopPropagation
             />
@@ -518,11 +535,13 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
               palette={theme.palette.remove}
               onClick={() => {
                 userInVote && userVote?.[0].decision === "remove"
-                  ? snackWrap( () => wipeMyVote() )()
+                  ? snackWrap(() => wipeMyVote())()
                   : uncertain && !entry?.state?.panel?.is_active
-		    ? openModal(ModalContent(entry, "remove"),
-  			        snackWrap( ()=>submitDecision("remove") ))
-  		    : snackWrap ( ()=> submitDecision("remove") )()
+                    ? openModal(
+                        ModalContent(entry, "remove"),
+                        snackWrap(() => submitDecision("remove")),
+                      )
+                    : snackWrap(() => submitDecision("remove"))();
               }}
               stopPropagation
             />
