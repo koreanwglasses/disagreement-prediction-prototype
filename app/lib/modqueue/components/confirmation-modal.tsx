@@ -73,15 +73,15 @@ export const ConfirmationModal = () => {
               label={"Yes, " + modalState.actionDesc}
               variant="filled"
               onClick={() => {
-                modalState.actionFunction();
                 dispatch(closeModal());
+                modalState.actionFunction();
               }}
             />
             <ActionButton
               icon={null}
               label={"No, abort action"}
               variant="outlined"
-              onClick={() => dispatch(closeModal())}
+              onClick={() => {dispatch(closeModal())}}
             />
           </Box>
         </Box>

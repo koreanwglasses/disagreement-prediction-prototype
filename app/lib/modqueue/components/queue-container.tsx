@@ -3,7 +3,7 @@
 import { ContextViewer } from "@/lib/modqueue/components/context-viewer";
 import { EntryRenderer } from "@/lib/modqueue/components/entry";
 import { ToolbarRenderer } from "@/lib/modqueue/components/toolbar";
-import { Box, CircularProgress } from "@mui/material";
+import { Box, CircularProgress, Snackbar } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../reducers";
 import { fetchEntries } from "../slices/modqueue";
@@ -12,11 +12,12 @@ import { useAsync } from "react-use";
 import type { Entry } from "../model";
 import { ConfirmationModal } from "./confirmation-modal";
 import { Flex, FlexCol } from "@/lib/components/styled";
-
+import * as snackBarSlice from "../slices/snackbar"
 export const QueueContainer = () => {
   const dispatch = useAppDispatch();
   const context_id = useAppSelector((state) => state.modqueue.context_id);
   const user_id = useAppSelector((state) => state.modqueue.user_id);
+
   // Fetch entries and get status
   const status = useAsync(
     () => dispatch(fetchEntries({ context_id: context_id })).unwrap(),
@@ -27,6 +28,9 @@ export const QueueContainer = () => {
   const entries = useAppSelector((state) => state.modqueue.entries);
   const { completionMode, panelMode, myCasesOnly} = useAppSelector(
     (state) => state.queueContainer,
+  );
+  const {snackBarOpen, snackBarText} = useAppSelector(
+    (state) => state.snackBar,
   );
   return (
     <>
@@ -39,7 +43,6 @@ export const QueueContainer = () => {
             borderStyle: "solid",
             borderColor: "rgba(0,0,0,0.25)",
             paddingRight: "5px",
-
             height: "100vh",
           }}
         >
@@ -81,6 +84,12 @@ export const QueueContainer = () => {
         </Box>
       </Flex>
       <ConfirmationModal />
+      <Snackbar
+        open={snackBarOpen}
+	message={snackBarText}
+	autoHideDuration={4000}
+	onClose={()=>dispatch(snackBarSlice.setSnackBarOpen({snackBarOpen: false}))}
+      />
     </>
   );
 };
