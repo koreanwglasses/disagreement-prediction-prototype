@@ -838,6 +838,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-transition-group@npm:^4":
+  version: 4.4.11
+  resolution: "@types/react-transition-group@npm:4.4.11"
+  dependencies:
+    "@types/react": "npm:*"
+  checksum: 10c0/8fbf0dcc1b81985cdcebe3c59d769fe2ea3f4525f12c3a10a7429a59f93e303c82b2abb744d21cb762879f4514969d70a7ab11b9bf486f92213e8fe70e04098d
+  languageName: node
+  linkType: hard
+
 "@types/react-transition-group@npm:^4.4.10":
   version: 4.4.10
   resolution: "@types/react-transition-group@npm:4.4.10"
@@ -1091,6 +1100,7 @@ __metadata:
     "@types/node": "npm:^20"
     "@types/react": "npm:^18"
     "@types/react-dom": "npm:^18"
+    "@types/react-transition-group": "npm:^4"
     "@types/string-hash": "npm:^1.1.3"
     dotenv: "npm:^16.4.5"
     eslint: "npm:^8"
@@ -1102,6 +1112,7 @@ __metadata:
     react: "npm:^18"
     react-dom: "npm:^18"
     react-redux: "npm:^9.1.2"
+    react-transition-group: "npm:^4.4.5"
     react-use: "npm:^17.5.1"
     string-hash: "npm:^1.1.3"
     tailwindcss: "npm:^3.4.1"
