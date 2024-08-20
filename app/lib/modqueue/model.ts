@@ -62,7 +62,7 @@ export type Entry = EntryModel & {
 /// Methods for fetching/updating data (Public)
 export const fetchEntries = async ({
   context_id,
-  limit = 20,
+  limit=400
 }: {
   context_id?: string;
   limit?: number;
