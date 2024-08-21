@@ -29,7 +29,7 @@ interface EntryModel {
   is_op?: number;
 
   panel_predictions: { approve: number; remove: number; unsure: number };
-  raw_panel_predictions: number[];
+  panel_predictions_raw: number[];
 }
 
 interface EntryStateModel {
@@ -298,7 +298,7 @@ const fillMockData = (entries: Entry[]) => {
       post_author_name,
       parent_author_name,
       panel_predictions: generatePanelPrediction(entry),
-      raw_panel_predictions: generateRawPanelPredictions(entry),
+      panel_predictions_raw: generateRawPanelPredictions(entry),
       ...(entry as Partial<Entry>),
     } as Entry;
   });

@@ -230,7 +230,7 @@ const PredictionsRenderer = ({
         )}
         <AccordionDetails sx={{ width: "100%" }}>
           {/* <PredictionScoresBarChart scores={entry.panel_predictions} /> */}
-          <PredictionScoresHistogram scores={entry.raw_panel_predictions} />
+          <PredictionScoresHistogram scores={entry.panel_predictions_raw} />
           If every moderator on your team took a vote, our model predicts{" "}
           <strong>
             {(entry.panel_predictions.approve * 100).toFixed(0)}%
