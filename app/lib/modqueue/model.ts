@@ -298,6 +298,7 @@ const fillMockData = (entries: Entry[]) => {
       post_author_name,
       parent_author_name,
       panel_predictions: generatePanelPrediction(entry),
+      raw_panel_predictions: generateRawPanelPredictions(entry),
       ...(entry as Partial<Entry>),
     } as Entry;
   });
@@ -319,3 +320,7 @@ const generatePanelPrediction = (entry: Entry) => {
     unsure: 0.1,
   };
 };
+
+const generateRawPanelPredictions = (entry: Entry) => [
+  0.05, 0.05, 0.15, 0.75, 0.85, 0.95, 0.95, 0.95,
+];
