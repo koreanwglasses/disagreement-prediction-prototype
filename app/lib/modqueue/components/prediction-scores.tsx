@@ -2,7 +2,12 @@
 import { Box } from "@mui/material";
 import { theme } from "../../theme";
 import React, { useMemo } from "react";
-import { Vega, VisualizationSpec, createClassFromSpec } from "react-vega";
+import {
+  Vega,
+  VegaLite,
+  VisualizationSpec,
+  createClassFromSpec,
+} from "react-vega";
 
 export const PredictionScoresBarChart = ({
   scores,
@@ -29,7 +34,7 @@ export const PredictionScoresBarChart = ({
           bottom={barOffsetBottom}
           width={`${s[0]}%`}
           height={barHeight}
-          bgcolor={theme.palette.accept.main}
+          bgcolor={theme.palette.approve.main}
         />
       )}
       {s[1] > 1 && (
@@ -113,14 +118,58 @@ export const PredictionScoresBarChart = ({
 };
 
 export const PredictionScoresHistogram = ({ scores }: { scores: number[] }) => {
-  const spec: VisualizationSpec = useMemo(
-    () => ({
-      width: 400,
-      height: 100,
-      data: [{ name: "scores" }],
-    }),
+  const spec = useMemo(
+    () =>
+      ({
+        width: 400,
+        height: 100,
+        background: "transparent",
+        data: { name: "scores" },
+        mark: "bar",
+        encoding: {
+          x: {
+            bin: { extent: [0, 1], step: 0.1 },
+            field: "score",
+            axis: {
+              title: null,
+              labelExpr: `
+                    datum.value === 0 
+                      ? 'Approve' 
+                      : datum.value === 1 
+                        ? 'Remove' 
+                        : datum.value === 0.5 
+                          ? 'Unsure' 
+                          : ''
+                  `,
+            },
+          },
+          y: { aggregate: "count", axis: { title: "# of moderators" } },
+          color: {
+            field: "score",
+            scale: {
+              type: "linear",
+              domain: [0, 1],
+              range: [
+                theme.palette.approve.main,
+                "#aaa",
+                theme.palette.remove.main,
+              ],
+            },
+            legend: null,
+          },
+        },
+      }) as VisualizationSpec,
     [],
   );
 
-  return <Vega spec={spec} data={{ scores }} />;
+  const data = useMemo(
+    () => ({ scores: scores.map((score) => ({ score })) }),
+    [scores],
+  );
+
+  return (
+    <Box>
+      <VegaLite spec={spec} data={data} actions={false} />
+    </Box>
+  );
 };

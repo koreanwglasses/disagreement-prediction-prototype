@@ -1,5 +1,5 @@
 const palette = {
-  accept: {
+  approve: {
     main: "#1ea920",
     contrastText: "#000000",
   },

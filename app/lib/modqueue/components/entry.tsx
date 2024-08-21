@@ -35,6 +35,10 @@ import {
   PredictionScoresBarChart,
   PredictionScoresHistogram,
 } from "./prediction-scores";
+import {
+  selectLocalEntryState,
+  setPredictionsExpanded,
+} from "../slices/local-entry-state";
 
 const _EntryRenderer = ({ entry }: { entry: Entry }) => {
   const dispatch = useAppDispatch();
@@ -71,7 +75,7 @@ const HeaderRenderer = ({ entry }: { entry: Entry }) => {
   const decisionMarkerStyle = {
     backgroundColor:
       finalDecision == "approve"
-        ? theme.palette.accept.main
+        ? theme.palette.approve.main
         : theme.palette.remove.main,
     color: "white",
     borderRadius: 1,
@@ -188,9 +192,13 @@ const PredictionsRenderer = ({
   entry: Entry;
   includeHeader: boolean;
 }) => {
-  const [expanded, setExpanded] = useState(false);
+  const dispatch = useAppDispatch();
+  const localState = useAppSelector(selectLocalEntryState(entry.id));
+  const expanded = !!localState?.predictionsExpanded;
   const toggleAccordion: MouseEventHandler<HTMLDivElement> = (e) => {
-    setExpanded((prev) => !prev);
+    dispatch(
+      setPredictionsExpanded({ entry_id: entry.id, expanded: !expanded }),
+    );
     e.stopPropagation();
   };
   return (
@@ -394,7 +402,7 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
                   ? "filled"
                   : "outlined"
               }
-              palette={theme.palette.accept}
+              palette={theme.palette.approve}
               onClick={() => {
                 userInVote && userVote?.[0].decision === "approve"
                   ? snackWrap(() => wipeMyVote())()
@@ -494,7 +502,7 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
                       color={
                         decision === "approve" &&
                         (userInVote || entry?.state?.mod_decision)
-                          ? theme.palette.accept.main
+                          ? theme.palette.approve.main
                           : decision &&
                               (userInVote || entry?.state?.mod_decision)
                             ? theme.palette.remove.main

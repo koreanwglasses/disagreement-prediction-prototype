@@ -7,6 +7,7 @@ import { contextViewerSlice } from "./slices/context-viewer";
 import { modalSlice } from "./slices/modal";
 import { queueContainerSlice } from "./slices/queue-container";
 import { snackBarSlice } from "./slices/snackbar";
+import { localEntryStateSlice } from "./slices/local-entry-state";
 
 ///// Configure Store and Hooks
 
@@ -17,6 +18,7 @@ export const store = configureStore({
     modal: modalSlice.reducer,
     queueContainer: queueContainerSlice.reducer,
     snackBar: snackBarSlice.reducer,
+    localEntryState: localEntryStateSlice.reducer,
   },
 });
 
