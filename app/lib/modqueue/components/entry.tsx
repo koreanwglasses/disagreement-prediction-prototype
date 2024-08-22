@@ -606,16 +606,11 @@ const ModalContent = (
         " via panel. If you proceed, you will erase all existing votes on the panel, including those made by other moderators.";
     }
   } else if (action === "approve" || action === "remove") {
-    if (
-      entry.panel_predictions.remove < 0.7 &&
-      entry.panel_predictions.approve < 0.7
-    ) {
-      returnObj.name = "uncertain/" + action;
-      returnObj.actionDesc = action;
-      returnObj.body = (
-        <PredictionsRenderer entry={entry} includeHeader={false} />
-      );
-    }
+    returnObj.name = "uncertain/" + action;
+    returnObj.actionDesc = action;
+    returnObj.body = (
+      <PredictionsRenderer entry={entry} includeHeader={false} />
+    );
   }
   return returnObj;
 };

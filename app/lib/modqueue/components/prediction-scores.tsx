@@ -161,7 +161,7 @@ const kdeSpec: VisualizationSpec = {
   transform: [
     {
       density: "score",
-      bandwidth: 0.05,
+      bandwidth: 0.02,
       extent: [0, 1],
     },
   ],
@@ -206,7 +206,7 @@ export const PredictionScoresHistogram = ({
   mode = "kde",
 }: {
   scores: number[];
-  mode: "hist" | "kde";
+  mode?: "hist" | "kde";
 }) => {
   const data = useMemo(
     () => ({ scores: scores.map((score) => ({ score })) }),
@@ -214,7 +214,7 @@ export const PredictionScoresHistogram = ({
   );
 
   return (
-    <Box>
+    <Box display="flex" width="100%" justifyContent="center">
       <VegaLite
         spec={mode === "hist" ? histSpec : kdeSpec}
         data={data}
