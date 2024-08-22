@@ -117,22 +117,19 @@ export const PredictionScoresBarChart = ({
   );
 };
 
-export const PredictionScoresHistogram = ({ scores }: { scores: number[] }) => {
-  const spec = useMemo(
-    () =>
-      ({
-        width: 400,
-        height: 100,
-        background: "transparent",
-        data: { name: "scores" },
-        mark: "bar",
-        encoding: {
-          x: {
-            bin: { extent: [0, 1], step: 0.1 },
-            field: "score",
-            axis: {
-              title: null,
-              labelExpr: `
+const histSpec: VisualizationSpec = {
+  width: 400,
+  height: 100,
+  background: "transparent",
+  data: { name: "scores" },
+  mark: "bar",
+  encoding: {
+    x: {
+      bin: { extent: [0, 1], step: 0.1 },
+      field: "score",
+      axis: {
+        title: null,
+        labelExpr: `
                     datum.value === 0 
                       ? 'Approve' 
                       : datum.value === 1 
@@ -141,27 +138,76 @@ export const PredictionScoresHistogram = ({ scores }: { scores: number[] }) => {
                           ? 'Unsure' 
                           : ''
                   `,
-            },
-          },
-          y: { aggregate: "count", axis: { title: "# of moderators" } },
-          color: {
-            field: "score",
-            scale: {
-              type: "linear",
-              domain: [0, 1],
-              range: [
-                theme.palette.approve.main,
-                "#aaa",
-                theme.palette.remove.main,
-              ],
-            },
-            legend: null,
-          },
-        },
-      }) as VisualizationSpec,
-    [],
-  );
+      },
+    },
+    y: { aggregate: "count", axis: { title: "# of moderators" } },
+    color: {
+      field: "score",
+      scale: {
+        type: "linear",
+        domain: [0, 1],
+        range: [theme.palette.approve.main, "#aaa", theme.palette.remove.main],
+      },
+      legend: null,
+    },
+  },
+};
 
+const kdeSpec: VisualizationSpec = {
+  width: 400,
+  height: 100,
+  background: "transparent",
+  data: { name: "scores" },
+  transform: [
+    {
+      density: "score",
+      bandwidth: 0.05,
+      extent: [0, 1],
+    },
+  ],
+  mark: "bar",
+  encoding: {
+    x: {
+      field: "value",
+      type: "quantitative",
+      scale: { domain: [0, 1] },
+      axis: {
+        title: null,
+        labelExpr: `
+          datum.value === 0
+            ? 'Approve'
+            : datum.value === 1
+              ? 'Remove'
+              : datum.value === 0.5
+                ? 'Unsure'
+                : ''
+        `,
+      },
+    },
+    y: {
+      field: "density",
+      type: "quantitative",
+      axis: null,
+    },
+    color: {
+      field: "value",
+      scale: {
+        type: "linear",
+        domain: [0, 1],
+        range: [theme.palette.approve.main, "#aaa", theme.palette.remove.main],
+      },
+      legend: null,
+    },
+  },
+};
+
+export const PredictionScoresHistogram = ({
+  scores,
+  mode = "kde",
+}: {
+  scores: number[];
+  mode: "hist" | "kde";
+}) => {
   const data = useMemo(
     () => ({ scores: scores.map((score) => ({ score })) }),
     [scores],
@@ -169,7 +215,11 @@ export const PredictionScoresHistogram = ({ scores }: { scores: number[] }) => {
 
   return (
     <Box>
-      <VegaLite spec={spec} data={data} actions={false} />
+      <VegaLite
+        spec={mode === "hist" ? histSpec : kdeSpec}
+        data={data}
+        actions={false}
+      />
     </Box>
   );
 };
