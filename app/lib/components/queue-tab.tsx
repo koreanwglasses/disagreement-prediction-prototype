@@ -19,7 +19,7 @@ export const QueueTabs = <M extends readonly string[]>({
   return (
     <ToggleButtonGroup
       size="large"
-      sx={{ gap: 10 }}
+      sx={{ gap: 0 }}
       exclusive
       value={activeMode}
       onChange={(event, newMode) => {

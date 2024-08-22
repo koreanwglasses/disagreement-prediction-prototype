@@ -43,7 +43,7 @@ export const ToolbarRenderer = () => {
           activeMode={completionMode}
           setActiveMode={queueTabEffect}
         />
-        <Box display="flex" flexDirection="row" sx={{ gap: 5 }}>
+        <Box display="flex" flexDirection="row" sx={{ gap: 0 }}>
           <QueueDropdown
             modes={panelModes}
             activeMode={panelMode}
