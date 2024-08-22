@@ -65,7 +65,7 @@ export const QueueContainer = () => {
           }}
         >
           <ToolbarRenderer />
-          <Box sx={{ overflowY: "auto" }} ref={listContainerRef}>
+          <Box sx={{ overflowY: "auto", flexGrow: 1 }} ref={listContainerRef}>
             <Virtuoso
               style={{ height: listContainerRect.height }}
               totalCount={entriesToShow.length}
