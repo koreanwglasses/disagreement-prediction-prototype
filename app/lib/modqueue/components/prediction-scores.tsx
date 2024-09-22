@@ -232,11 +232,7 @@ export const PredictionScoresHistogram = ({
   mode = "kde",
 }: {
   scores: number[];
-<<<<<<< HEAD
   mode: "hist" | "kde" | "swarm";
-=======
-  mode?: "hist" | "kde";
->>>>>>> b94ff5f570abc0764e7fc90758082249e9e3293d
 }) => {
   const data = useMemo(
     () => ({ scores: scores.map((score) => ({ score })) }),
