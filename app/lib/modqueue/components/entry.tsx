@@ -240,7 +240,7 @@ const PredictionsRenderer = ({
         )}
         <AccordionDetails sx={{ width: "100%" }}>
           {/* <PredictionScoresBarChart scores={entry.panel_predictions} /> */}
-          <PredictionScoresHistogram scores={entry.panel_predictions_raw} mode={"kde"}/>
+          <PredictionScoresHistogram scores={entry.panel_predictions_raw} mode={"hist"}/>
           A machine learning model was used to predict how likely each moderator on your team would be to support approval or removal.
 	  The chart above shows how common different likelihoods were.
           At a high level, our model predicts{" "} 
@@ -623,16 +623,11 @@ const ModalContent = (
         " via panel. If you proceed, you will erase all existing votes on the panel, including those made by other moderators.";
     }
   } else if (action === "approve" || action === "remove") {
-    if (
-      entry.panel_predictions.remove < 0.7 &&
-      entry.panel_predictions.approve < 0.7
-    ) {
-      returnObj.name = "uncertain/" + action;
-      returnObj.actionDesc = action;
-      returnObj.body = (
-        <PredictionsRenderer entry={entry} includeHeader={false} />
-      );
-    }
+    returnObj.name = "uncertain/" + action;
+    returnObj.actionDesc = action;
+    returnObj.body = (
+      <PredictionsRenderer entry={entry} includeHeader={false} />
+    );
   }
   return returnObj;
 };
