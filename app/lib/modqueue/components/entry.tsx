@@ -20,6 +20,7 @@ import {
   mdiAccountGroup,
   mdiArrowULeftTop,
   mdiChevronDown,
+  mdiTextBoxOutline
 } from "@mdi/js";
 import _ from "lodash";
 import { ActionButton } from "@/lib/components/action-button";
@@ -27,6 +28,7 @@ import { useAppDispatch, useAppSelector } from "../reducers";
 import * as modqueueSlice from "../slices/modqueue";
 import * as modalSlice from "../slices/modal";
 import * as snackBarSlice from "../slices/snackbar";
+import * as notesModalSlice from "../slices/notes-modal";
 import { setContextViewerEntry } from "../slices/context-viewer";
 import { ModalState } from "../slices/modal";
 import { theme } from "../../theme";
@@ -238,16 +240,16 @@ const PredictionsRenderer = ({
         )}
         <AccordionDetails sx={{ width: "100%" }}>
           {/* <PredictionScoresBarChart scores={entry.panel_predictions} /> */}
-          <PredictionScoresHistogram scores={entry.panel_predictions_raw} />
-          If every moderator on your team took a vote, our model predicts{" "}
+          <PredictionScoresHistogram scores={entry.panel_predictions_raw} mode={"kde"}/>
+          A machine learning model was used to predict how likely each moderator on your team would be to support approval or removal.
+	  The chart above shows how common different likelihoods were.
+          At a high level, our model predicts{" "} 
           <strong>
             {(entry.panel_predictions.approve * 100).toFixed(0)}%
           </strong>{" "}
-          would support approval, and{" "}
+          would be more likely to support approval, and{" "}
           <strong>{(entry.panel_predictions.remove * 100).toFixed(0)}%</strong>{" "}
-          support removal. We are unsure how{" "}
-          <strong>{(entry.panel_predictions.unsure * 100).toFixed(0)}%</strong>{" "}
-          of moderators would act.{" "}
+          would be more likely to support removal. 
           {entry.panel_predictions.approve < 0.7 &&
           entry.panel_predictions.remove < 0.7 ? (
             <span>
@@ -281,7 +283,6 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
   };
   const snackWrap = (func: () => Promise<EntryState | null>) => {
     return async () => {
-      console.log("in the wrap");
       const preValue = entry?.state?.mod_decision;
       const entryState = await func();
       const postValue = entryState?.mod_decision;
@@ -480,7 +481,7 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
           />
         )}
       </Box>
-      <Box display="flex" gap={5} alignItems={"start"}>
+      <Box display="flex" gap={1.5} alignItems={"start"}>
         {entry.state?.panel?.is_active && (
           <Box display="flex" gap={0.5} alignItems={"start"}>
             {[0, 1, 2].map((i) => {
@@ -548,6 +549,22 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
             stopPropagation
           />
         )}
+	<ActionButton
+	  icon={<Icon path={mdiTextBoxOutline} size={0.7} />}
+	  label="Case Notes"
+	  variant="outlined"
+	  onClick={() => {
+	      dispatch(
+  	        notesModalSlice.openNotesModal({
+	          open: true,
+		  entry_id: entry.id,
+		  notes: entry?.state?.notes ? entry?.state?.notes : []
+	        })
+	      )
+	    }
+	  }
+	  stopPropagation
+	/>
       </Box>
     </Box>
   );

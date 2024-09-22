@@ -27,7 +27,6 @@ interface EntryModel {
     [rule: string]: number;
   };
   is_op?: number;
-
   panel_predictions: { approve: number; remove: number; unsure: number };
   panel_predictions_raw: number[];
 }
@@ -35,9 +34,14 @@ interface EntryModel {
 interface EntryStateModel {
   entry_id: ObjectId;
   context_id: string;
-
   mod_decision?: Decision;
   panel?: PanelStateModel;
+  notes: Array<NotesModel>
+}
+
+interface NoteModel {
+  author: string;
+  body: string;
 }
 
 interface PanelStateModel {
@@ -152,6 +156,20 @@ export const updatePanelState = async ({
   var final_val = cleanEntryState(await collection.findOne(key));
   return final_val;
 };
+
+export const addNote = async (
+  entry_id,
+  user_id,
+  context_id,
+  noteText,
+) => {
+  const key = { entry_id: ObjectId.createFromHexString(entry_id), context_id };
+  const collection = await getEntryStatesCollection();
+  const currentState = await collection.findOne(key);
+  let toAppend = { author: user_id, body: noteText};
+  await collection.updateOne(key, { $push: {"notes": toAppend }  });
+  return cleanEntryState(await collection.findOne(key));
+}
 
 export const wipeMyVote = async ({
   entry_id,

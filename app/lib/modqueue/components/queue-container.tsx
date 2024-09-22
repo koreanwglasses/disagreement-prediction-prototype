@@ -11,6 +11,7 @@ import _ from "lodash";
 import { useAsync, useMeasure } from "react-use";
 import type { Entry } from "../model";
 import { ConfirmationModal } from "./confirmation-modal";
+import { NotesModal } from "./notes-modal";
 import { Flex, FlexCol } from "@/lib/components/styled";
 import * as snackBarSlice from "../slices/snackbar";
 import { TransitionGroup } from "react-transition-group";
@@ -92,6 +93,7 @@ export const QueueContainer = () => {
         </Box>
       </Flex>
       <ConfirmationModal />
+      <NotesModal />
       <Snackbar
         open={snackBarOpen}
         message={snackBarText}

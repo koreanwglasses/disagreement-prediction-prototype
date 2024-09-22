@@ -8,6 +8,7 @@ import { modalSlice } from "./slices/modal";
 import { queueContainerSlice } from "./slices/queue-container";
 import { snackBarSlice } from "./slices/snackbar";
 import { localEntryStateSlice } from "./slices/local-entry-state";
+import { notesModalSlice } from "./slices/notes-modal";
 
 ///// Configure Store and Hooks
 
@@ -19,6 +20,7 @@ export const store = configureStore({
     queueContainer: queueContainerSlice.reducer,
     snackBar: snackBarSlice.reducer,
     localEntryState: localEntryStateSlice.reducer,
+    notesModal: notesModalSlice.reducer
   },
 });
 

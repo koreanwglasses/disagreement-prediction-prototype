@@ -161,8 +161,10 @@ const kdeSpec: VisualizationSpec = {
   transform: [
     {
       density: "score",
-      bandwidth: 0.05,
+      bandwidth: 0.01,
       extent: [0, 1],
+      minsteps:1000,
+      maxsteps:1000
     },
   ],
   mark: "bar",
@@ -200,13 +202,37 @@ const kdeSpec: VisualizationSpec = {
     },
   },
 };
+const swarmSpec: VisualizationSpec = {
+  description: "Model predictions for the probability each moderator will support removal for this comment",
+  background: "transparent",
+  data: {name: "scores"},
+  transform: [{calculate: "sampleUniform(-0.4,0.4)", as: "random"}, {calculate: "sampleUniform(-0.01, 0.01)", as: "xoffset"}],
+  height: 100,
+  width: 400,
+  mark: {type: "point", opacity: 1},
+  encoding: {
+    x: {field: "score", type: "quantitative", axis: {title: "Predicted Probability of Supporting Removal"}, scale: {domain:[0,1]}},
+    y: {field: "random", type: "quantitative",
+        axis: null},
+    xOffset: {field: "xoffset", type: "quantitative"},
+    color: {
+      field: "score",
+      scale: {
+        type: "linear",
+        domain: [0,1],
+        range: [theme.palette.approve.main, "#aaa", theme.palette.remove.main]
+      },
+      legend: null
+    },
+  },
+};
 
 export const PredictionScoresHistogram = ({
   scores,
   mode = "kde",
 }: {
   scores: number[];
-  mode: "hist" | "kde";
+  mode: "hist" | "kde" | "swarm";
 }) => {
   const data = useMemo(
     () => ({ scores: scores.map((score) => ({ score })) }),
@@ -216,7 +242,12 @@ export const PredictionScoresHistogram = ({
   return (
     <Box>
       <VegaLite
-        spec={mode === "hist" ? histSpec : kdeSpec}
+        spec={ mode === "hist"
+	       	? histSpec
+	        : mode === "kde"
+		  ? kdeSpec
+	          : swarmSpec
+	}
         data={data}
         actions={false}
       />
