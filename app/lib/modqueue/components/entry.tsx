@@ -241,19 +241,20 @@ const PredictionsRenderer = ({
         <AccordionDetails sx={{ width: "100%" }}>
           {/* <PredictionScoresBarChart scores={entry.panel_predictions} /> */}
           <PredictionScoresHistogram scores={entry.panel_predictions_raw} mode={"hist"}/>
-          A machine learning model was used to predict how likely each moderator on your team would be to support approval or removal.
+          A machine learning model was used to predict how likely each r/ChangeMyView moderator would be to support approval or removal.
 	  The chart above shows how common different likelihoods were.
           At a high level, our model predicts{" "} 
           <strong>
             {(entry.panel_predictions.approve * 100).toFixed(0)}%
           </strong>{" "}
-          would be more likely to support approval, and{" "}
+          of moderators would be more likely to support approval, and{" "}
           <strong>{(entry.panel_predictions.remove * 100).toFixed(0)}%</strong>{" "}
-          would be more likely to support removal. 
+          of moderators would be more likely to support removal.  
           {entry.panel_predictions.approve < 0.7 &&
           entry.panel_predictions.remove < 0.7 ? (
-            <span>
-              Because consensus for this case is low,{" "}
+            <span> 
+	       {" "}
+               Because consensus for this case is low,{" "}
               <strong>we recommend starting a panel.</strong>
             </span>
           ) : (
@@ -383,6 +384,9 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
   const uncertain =
     entry.panel_predictions.remove < 0.8 &&
     entry.panel_predictions.approve < 0.8;
+  const avg_prediction = entry.panel_predictions_raw.reduce((a, b) => a + b) / entry.panel_predictions_raw.length
+  const clear_remove = avg_prediction > 0.8
+  const clear_approve = avg_prediction < 0.2
   return (
     <Box
       display="flex"
@@ -407,7 +411,7 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
               onClick={() => {
                 userInVote && userVote?.[0].decision === "approve"
                   ? snackWrap(() => wipeMyVote())()
-                  : uncertain && !entry?.state?.panel?.is_active
+                  : (uncertain || clear_remove) && !entry?.state?.panel?.is_active
                     ? openModal(
                         ModalContent(entry, "approve"),
                         snackWrap(() => submitDecision("approve")),
@@ -430,7 +434,7 @@ const ActionsRenderer = ({ entry }: { entry: Entry }) => {
               onClick={() => {
                 userInVote && userVote?.[0].decision === "remove"
                   ? snackWrap(() => wipeMyVote())()
-                  : uncertain && !entry?.state?.panel?.is_active
+                  : (uncertain || clear_approve) && !entry?.state?.panel?.is_active
                     ? openModal(
                         ModalContent(entry, "remove"),
                         snackWrap(() => submitDecision("remove")),
